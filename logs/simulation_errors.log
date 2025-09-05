@@ -1,0 +1,4 @@
+2025-09-05 06:09:46,405 - TankArmorSim - WARNING - warning:120 - Warning test
+2025-09-05 06:09:46,405 - TankArmorSim - WARNING - warning:124 - Warning data: {
+  "warning_level": "medium"
+}

@@ -1,0 +1,59 @@
+{
+  "session_id": "20250905_072653",
+  "start_time": "2025-09-05T07:26:53.865197",
+  "simulations": [
+    {
+      "test_type": "penetration",
+      "timestamp": "2025-09-05T07:26:54.540329",
+      "inputs": {
+        "ammunition": "M829A4 APFSDS",
+        "armor": "T-90M with Relikt ERA",
+        "angle": 30.0,
+        "distance": 1200.0
+      },
+      "results": {
+        "penetration": 754.2052751667655,
+        "effective_thickness": 755.1741521000304,
+        "outcome": "ARMOR_DEFEATS",
+        "advanced_physics": {
+          "base_penetration": 1259.2500619510106,
+          "final_penetration": 754.2052751667655,
+          "velocity_at_target": 1149.9107580851487,
+          "advanced_effects": {
+            "environmental_modifier": 1.0,
+            "ballistic_result": {
+              "_class": "AdvancedBallisticResult",
+              "velocity_at_target": 1149.9107580851487,
+              "time_of_flight": 0.8690000000000007,
+              "energy_at_target": 3041277.9285879107,
+              "trajectory_angle": -0.3577069552795971,
+              "penetration_modifier": 1.0,
+              "ricochet_probability": 0.0,
+              "environmental_effects": {
+                "temperature_effect": 0.0,
+                "altitude_effect": 0.0,
+                "humidity_effect": 0.0,
+                "wind_effect": 0.0,
+                "air_density_ratio": 0.9980921775903026
+              }
+            }
+          },
+          "ricochet_analysis": {
+            "ricochet_probability": 0.04151469808017273,
+            "predicted_outcome": "penetration",
+            "deflection_angle": 0.0,
+            "critical_angle": 73.36354545454546
+          },
+          "temperature_analysis": {
+            "velocity_modifier": 1.0,
+            "penetration_modifier": 1.0,
+            "propellant_efficiency": 1.0686750042657422,
+            "accuracy_modifier": 1.0
+          }
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "performance_metrics": {}
+}

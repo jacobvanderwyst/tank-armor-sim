@@ -1,0 +1,31 @@
+{
+  "session_id": "20250905_060946",
+  "start_time": "2025-09-05T06:09:46.404641",
+  "simulations": [
+    {
+      "test_type": "penetration",
+      "timestamp": "2025-09-05T06:09:46.405739",
+      "inputs": {
+        "ammunition": "M829A4 APFSDS",
+        "armor": "Test Composite",
+        "angle": 15.0,
+        "distance": 2000.0
+      },
+      "results": {
+        "penetration": 1120.1194635759912,
+        "effective_thickness": 797.1626589157639,
+        "outcome": "TEST",
+        "advanced_physics": {
+          "base_penetration": 1120.1194635759912,
+          "final_penetration": 1120.1194635759912,
+          "velocity_at_target": 1336.0,
+          "advanced_effects": {},
+          "ricochet_analysis": {},
+          "temperature_analysis": {}
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "performance_metrics": {}
+}
