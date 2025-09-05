@@ -6,13 +6,18 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 
 **Setup:**
 ```bash
-# Python 3.8+ required
+# Python 3.8+ required - includes matplotlib and numpy for visualization
 pip install -r requirements.txt
 ```
 
 **Run the simulator:**
 ```bash
 python main.py
+```
+
+**Test visualization (optional):**
+```bash
+python test_visualization.py
 ```
 
 **Basic penetration test (programmatic):**
@@ -31,9 +36,19 @@ can_defeat = armor.can_defeat(penetration, "kinetic", 15.0)
 
 The simulator provides an interactive CLI interface accessed via `python main.py`. The main simulation flow:
 
-1. **Run Penetration Test (Option 1)**: Select ammunition → Select armor → Enter engagement parameters (range, angle) → View results
-2. **View Catalogs (Options 4-5)**: Browse available ammunition and armor with specifications
-3. **Future features**: Ammunition comparison (Option 2), Armor comparison (Option 3)
+1. **Run Penetration Test (Option 1)**: Select ammunition → Select armor → Enter engagement parameters (range, angle) → View text results
+2. **Run Penetration Test with Visualization (Option 2)**: Same as above but generates comprehensive 4-panel visualization showing:
+   - Angle of attack and armor geometry
+   - Ammunition-specific penetration mechanism (kinetic/chemical/spalling)
+   - Behind-armor effects and damage assessment
+   - Detailed penetration test summary
+3. **View Ballistic Trajectory (Option 3)**: Generate ballistic flight path visualization with:
+   - Projectile trajectory arc with gravity effects
+   - Velocity decay over distance
+   - Target armor representation
+   - Impact angle visualization
+4. **View Catalogs (Options 6-7)**: Browse available ammunition and armor with specifications
+5. **Future features**: Ammunition comparison (Option 4), Armor comparison (Option 5)
 
 **Key ammunition types available:**
 - M829A4 APFSDS (120mm, US)
@@ -59,17 +74,22 @@ tank-armor-sim/
 │   │   ├── base_ammo.py     # BaseAmmunition abstract class
 │   │   ├── kinetic_ammo.py  # APFSDS, AP, APCR classes
 │   │   └── chemical_ammo.py # HEAT, HESH classes
-│   └── armor/              # Armor class hierarchy  
-│       ├── base_armor.py    # BaseArmor abstract class
-│       ├── steel_armor.py   # RHA, HomogeneousSteel classes
-│       ├── composite_armor.py # CompositeArmor class
-│       ├── reactive_armor.py  # ReactiveArmor (ERA) class
-│       └── spaced_armor.py    # SpacedArmor class
+│   ├── armor/              # Armor class hierarchy  
+│   │   ├── base_armor.py    # BaseArmor abstract class
+│   │   ├── steel_armor.py   # RHA, HomogeneousSteel classes
+│   │   ├── composite_armor.py # CompositeArmor class
+│   │   ├── reactive_armor.py  # ReactiveArmor (ERA) class
+│   │   └── spaced_armor.py    # SpacedArmor class
+│   └── visualization/       # Graphical visualization system
+│       ├── __init__.py      # Visualization module exports
+│       ├── ballistics_visualizer.py # Flight path and trajectory plots
+│       └── penetration_visualizer.py # 4-panel penetration analysis
 ├── config/                 # Historical data (JSON format)
 │   ├── ammunition_data.json # Real-world ammunition specifications
 │   └── armor_data.json     # Real-world armor configurations
 ├── main.py                 # CLI entry point and TankArmorSimulator class
-└── requirements.txt        # No dependencies (pure Python standard library)
+├── test_visualization.py   # Visualization system test script
+└── requirements.txt        # matplotlib>=3.5.0, numpy>=1.20.0
 ```
 
 ## Ammunition Class Hierarchy
@@ -185,6 +205,31 @@ Each entry includes technical specifications, introduction year, country, and no
 - Penetration occurs when `penetration_capability > effective_thickness`
 - Safety margin = `effective_thickness - penetration_capability` (positive means armor holds)
 - Overmatch = `penetration_capability - effective_thickness` (positive means penetration)
+
+## Visualization System
+
+**BallisticsVisualizer** (`src.visualization.ballistics_visualizer`):
+- `visualize_flight_path()`: Creates trajectory plots with optional velocity decay subplot
+- `calculate_trajectory()`: Computes ballistic arc points with gravity and drag
+- Features: Projectile instances along flight path, armor target representation, impact angle annotation
+- Output: High-resolution PNG files with trajectory analysis
+
+**PenetrationVisualizer** (`src.visualization.penetration_visualizer`):
+- `visualize_penetration_process()`: Creates comprehensive 4-panel analysis
+- Panel 1: Angle of attack geometry with armor slope and thickness indicators
+- Panel 2: Ammunition-specific penetration mechanism (kinetic rod, HEAT jet, HESH spalling)
+- Panel 3: Behind-armor effects showing crew compartment damage assessment
+- Panel 4: Summary statistics and penetration analysis
+- Different visual effects for each ammunition type:
+  - **Kinetic**: Long rod penetrators, sabot discard, armor fragmentation
+  - **Chemical**: Shaped charge jets, molten metal effects, jet disruption
+  - **Spalling**: Shock wave propagation, spall cones, fragment patterns
+
+**Visualization Output**:
+- Automatically saved as high-resolution PNG files
+- Filename format: `penetration_[ammo]_[armor].png`, `trajectory_[ammo]_[range]m.png`
+- Color-coded by armor type: RHA (gray), Composite (brown), Reactive (orange), Spaced (blue)
+- Professional technical diagrams suitable for analysis and documentation
 
 ## Common Development Tasks
 

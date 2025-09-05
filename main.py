@@ -11,6 +11,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
 from ammunition import APFSDS, AP, APCR, HEAT, HESH
 from armor import RHA, CompositeArmor, ReactiveArmor, SpacedArmor
+from visualization import BallisticsVisualizer, PenetrationVisualizer
 from typing import List, Dict, Any
 
 
@@ -108,11 +109,13 @@ class TankArmorSimulator:
         print("    TANK ARMOR PENETRATION SIMULATOR")
         print("="*60)
         print("1. Run Penetration Test")
-        print("2. Compare Ammunition")
-        print("3. Compare Armor")
-        print("4. View Ammunition Catalog")
-        print("5. View Armor Catalog")
-        print("6. Exit")
+        print("2. Run Penetration Test with Visualization")
+        print("3. View Ballistic Trajectory")
+        print("4. Compare Ammunition")
+        print("5. Compare Armor")
+        print("6. View Ammunition Catalog")
+        print("7. View Armor Catalog")
+        print("8. Exit")
         print("="*60)
     
     def run_penetration_test(self):
@@ -220,6 +223,154 @@ class TankArmorSimulator:
         
         print("="*60)
     
+    def run_penetration_test_with_visualization(self):
+        """Run penetration test with comprehensive visualization."""
+        print("\n--- PENETRATION TEST WITH VISUALIZATION ---")
+        
+        # Use the same selection process as regular penetration test
+        print("\nAvailable Ammunition:")
+        ammo_list = list(self.ammunition_catalog.keys())
+        for i, ammo_name in enumerate(ammo_list, 1):
+            ammo = self.ammunition_catalog[ammo_name]
+            print(f"{i}. {ammo_name} ({ammo.penetration_type.upper()})")
+        
+        try:
+            ammo_choice = int(input(f"\nSelect ammunition (1-{len(ammo_list)}): ")) - 1
+            if ammo_choice < 0 or ammo_choice >= len(ammo_list):
+                print("Invalid selection!")
+                return
+            selected_ammo = self.ammunition_catalog[ammo_list[ammo_choice]]
+        except ValueError:
+            print("Invalid input!")
+            return
+        
+        # Select armor
+        print("\nAvailable Armor:")
+        armor_list = list(self.armor_catalog.keys())
+        for i, armor_name in enumerate(armor_list, 1):
+            armor = self.armor_catalog[armor_name]
+            print(f"{i}. {armor_name} ({armor.armor_type.upper()}, {armor.thickness}mm)")
+        
+        try:
+            armor_choice = int(input(f"\nSelect armor (1-{len(armor_list)}): ")) - 1
+            if armor_choice < 0 or armor_choice >= len(armor_list):
+                print("Invalid selection!")
+                return
+            selected_armor = self.armor_catalog[armor_list[armor_choice]]
+        except ValueError:
+            print("Invalid input!")
+            return
+        
+        # Get engagement parameters
+        try:
+            range_m = float(input("\nEnter engagement range (meters, 0-4000): "))
+            if range_m < 0 or range_m > 4000:
+                print("Range must be between 0 and 4000 meters!")
+                return
+                
+            angle = float(input("Enter impact angle from vertical (degrees, 0-75): "))
+            if angle < 0 or angle > 75:
+                print("Angle must be between 0 and 75 degrees!")
+                return
+        except ValueError:
+            print("Invalid input!")
+            return
+        
+        # Display text results first
+        print("\nGenerating visualization...")
+        self.calculate_and_display_result(selected_ammo, selected_armor, range_m, angle)
+        
+        # Generate comprehensive penetration visualization
+        try:
+            pen_visualizer = PenetrationVisualizer()
+            pen_fig = pen_visualizer.visualize_penetration_process(selected_ammo, selected_armor, range_m, angle)
+            
+            # Save and show the plot
+            pen_visualizer.save_plot(f'penetration_{selected_ammo.name.replace(" ", "_")}_{selected_armor.name.replace(" ", "_")}.png')
+            pen_visualizer.show_plot()
+            
+            print("\nVisualization complete! Check the generated image files.")
+            
+        except ImportError:
+            print("\nVisualization requires matplotlib and numpy. Please install dependencies:")
+            print("pip install -r requirements.txt")
+        except Exception as e:
+            print(f"\nError generating visualization: {e}")
+    
+    def view_ballistic_trajectory(self):
+        """Display ballistic trajectory visualization."""
+        print("\n--- BALLISTIC TRAJECTORY VISUALIZATION ---")
+        
+        # Select ammunition
+        print("\nAvailable Ammunition:")
+        ammo_list = list(self.ammunition_catalog.keys())
+        for i, ammo_name in enumerate(ammo_list, 1):
+            ammo = self.ammunition_catalog[ammo_name]
+            print(f"{i}. {ammo_name} ({ammo.penetration_type.upper()})")
+        
+        try:
+            ammo_choice = int(input(f"\nSelect ammunition (1-{len(ammo_list)}): ")) - 1
+            if ammo_choice < 0 or ammo_choice >= len(ammo_list):
+                print("Invalid selection!")
+                return
+            selected_ammo = self.ammunition_catalog[ammo_list[ammo_choice]]
+        except ValueError:
+            print("Invalid input!")
+            return
+        
+        # Select armor for target representation
+        print("\nSelect Target Armor:")
+        armor_list = list(self.armor_catalog.keys())
+        for i, armor_name in enumerate(armor_list, 1):
+            armor = self.armor_catalog[armor_name]
+            print(f"{i}. {armor_name} ({armor.armor_type.upper()}, {armor.thickness}mm)")
+        
+        try:
+            armor_choice = int(input(f"\nSelect target armor (1-{len(armor_list)}): ")) - 1
+            if armor_choice < 0 or armor_choice >= len(armor_list):
+                print("Invalid selection!")
+                return
+            selected_armor = self.armor_catalog[armor_list[armor_choice]]
+        except ValueError:
+            print("Invalid input!")
+            return
+        
+        # Get trajectory parameters
+        try:
+            range_m = float(input("\nEnter target range (meters, 0-4000): "))
+            if range_m < 0 or range_m > 4000:
+                print("Range must be between 0 and 4000 meters!")
+                return
+                
+            angle = float(input("Enter impact angle from vertical (degrees, 0-75): "))
+            if angle < 0 or angle > 75:
+                print("Angle must be between 0 and 75 degrees!")
+                return
+                
+            show_velocity = input("\nShow velocity decay subplot? (y/N): ").lower().startswith('y')
+        except ValueError:
+            print("Invalid input!")
+            return
+        
+        # Generate trajectory visualization
+        try:
+            print("\nGenerating ballistic trajectory visualization...")
+            ballistics_visualizer = BallisticsVisualizer()
+            traj_fig = ballistics_visualizer.visualize_flight_path(selected_ammo, selected_armor, 
+                                                                  range_m, angle, show_velocity)
+            
+            # Save and show the plot
+            ballistics_visualizer.save_plot(f'trajectory_{selected_ammo.name.replace(" ", "_")}_{range_m}m.png')
+            ballistics_visualizer.show_plot()
+            
+            print("\nTrajectory visualization complete! Check the generated image files.")
+            
+        except ImportError:
+            print("\nVisualization requires matplotlib and numpy. Please install dependencies:")
+            print("pip install -r requirements.txt")
+        except Exception as e:
+            print(f"\nError generating trajectory: {e}")
+    
     def view_ammunition_catalog(self):
         """Display detailed ammunition catalog."""
         print("\n" + "="*60)
@@ -257,23 +408,27 @@ class TankArmorSimulator:
         while True:
             self.display_menu()
             try:
-                choice = input("\nEnter your choice (1-6): ").strip()
+                choice = input("\nEnter your choice (1-8): ").strip()
                 
                 if choice == '1':
                     self.run_penetration_test()
                 elif choice == '2':
-                    print("Ammunition comparison feature coming soon!")
+                    self.run_penetration_test_with_visualization()
                 elif choice == '3':
-                    print("Armor comparison feature coming soon!")
+                    self.view_ballistic_trajectory()
                 elif choice == '4':
-                    self.view_ammunition_catalog()
+                    print("Ammunition comparison feature coming soon!")
                 elif choice == '5':
-                    self.view_armor_catalog()
+                    print("Armor comparison feature coming soon!")
                 elif choice == '6':
+                    self.view_ammunition_catalog()
+                elif choice == '7':
+                    self.view_armor_catalog()
+                elif choice == '8':
                     print("\nThank you for using the Tank Armor Penetration Simulator!")
                     break
                 else:
-                    print("Invalid choice! Please enter 1-6.")
+                    print("Invalid choice! Please enter 1-8.")
                     
             except KeyboardInterrupt:
                 print("\n\nExiting simulator...")

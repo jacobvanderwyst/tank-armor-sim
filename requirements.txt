@@ -1,9 +1,8 @@
 # Tank Armor Penetration Simulator Requirements
-# This project uses only Python standard library modules
-# No external dependencies required for core functionality
+# Core visualization dependencies
+matplotlib>=3.5.0      # For ballistic trajectory and penetration visualization
+numpy>=1.20.0          # For ballistics calculations and trajectory modeling
 
-# For future development (optional):
-# numpy>=1.20.0          # For advanced ballistics calculations
-# matplotlib>=3.5.0      # For penetration charts and graphs
+# Optional dependencies for future development:
 # pandas>=1.3.0          # For data analysis and export
 # pytest>=6.0.0          # For unit testing
