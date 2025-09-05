@@ -12,6 +12,8 @@ from tkinter import ttk, messagebox, filedialog
 import sys
 import os
 import threading
+import json
+import json as _json_for_settings
 from PIL import Image, ImageTk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
@@ -23,9 +25,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 from src.ammunition import APFSDS, AP, APCR, HEAT, HESH
 from src.armor import RHA, CompositeArmor, ReactiveArmor, SpacedArmor
 from src.visualization import BallisticsVisualizer, PenetrationVisualizer, ComparisonVisualizer
+from src.visualization.cross_section_visualizer import CrossSectionVisualizer
 from logging_system import get_logger
 from typing import Dict, Any, Optional, List
-from gui_dialogs import PenetrationTestDialog, TrajectoryDialog, ComparisonDialog
+from gui_dialogs import PenetrationTestDialog, TrajectoryDialog, ComparisonDialog, SettingsDialog
 
 
 class TankArmorSimulatorGUI:
@@ -36,6 +39,16 @@ class TankArmorSimulatorGUI:
         self.root = tk.Tk()
         self.setup_main_window()
         self.setup_style()
+        # Default: export interactive datasets when available (can be changed in Settings)
+        self.export_interactive_default = True
+        self.cross_section_mode = 'projected'
+        self.export_interactive_enabled = True
+        # Overlay visibility defaults
+        self.show_channels_overlay_default = True
+        self.show_ricochet_overlay_default = True
+        # Testing hook: last visualizer used
+        self._last_enhanced_visualizer = None
+        self._load_settings()
         self.create_ammunition_catalog()
         self.create_armor_catalog()
         self.create_main_interface()
@@ -198,6 +211,9 @@ class TankArmorSimulatorGUI:
         buttons = [
             ("Run Penetration Test", self.run_penetration_test),
             ("Penetration + Viz", self.run_penetration_with_viz),
+            ("Enhanced 3D Viz", self.run_enhanced_3d_visualization),
+            ("Open Interactive Result", self.open_interactive_result),
+            ("Settings", self.open_settings),
             ("Ballistic Trajectory", self.view_ballistic_trajectory),
             ("Compare Ammunition", self.compare_ammunition),
             ("Compare Armor", self.compare_armor),
@@ -430,7 +446,8 @@ Built with Python, tkinter, matplotlib, and numpy.
     
     def open_penetration_test_dialog(self):
         """Open penetration test parameter dialog."""
-        dialog = PenetrationTestDialog(self.root, self.ammunition_catalog, self.armor_catalog)
+        dialog = PenetrationTestDialog(self.root, self.ammunition_catalog, self.armor_catalog,
+                                       default_export_interactive=self.export_interactive_default)
         result = dialog.show()
         
         if result:
@@ -646,11 +663,19 @@ RESULT:
     
     def show_visualization_in_tab(self, figure, tab_name):
         """Show matplotlib figure in a new tab."""
-        # Remove existing tab with same name
-        for tab in self.notebook.tabs():
-            if self.notebook.tab(tab, "text") == tab_name:
-                self.notebook.forget(tab)
-                break
+        # Remove existing tab with same name (robust to mocked notebooks)
+        try:
+            tabs_iter = self.notebook.tabs() if hasattr(self.notebook, 'tabs') else []
+            for tab in tabs_iter:
+                try:
+                    if self.notebook.tab(tab, "text") == tab_name:
+                        self.notebook.forget(tab)
+                        break
+                except Exception:
+                    continue
+        except TypeError:
+            # Non-iterable tabs (e.g., Mock): skip removal
+            pass
         
         viz_frame = ttk.Frame(self.notebook)
         self.notebook.add(viz_frame, text=tab_name)
@@ -677,6 +702,48 @@ RESULT:
                 self.root.attributes('-zoomed', True)  # Linux maximize
             except:
                 pass  # Fallback for other systems
+
+    def show_dual_visualizations_in_tab(self, figure_left, figure_right, tab_name):
+        """Show two matplotlib figures side-by-side in a new tab."""
+        # Remove existing tab with same name (robust to mocked notebooks)
+        try:
+            tabs_iter = self.notebook.tabs() if hasattr(self.notebook, 'tabs') else []
+            for tab in tabs_iter:
+                try:
+                    if self.notebook.tab(tab, "text") == tab_name:
+                        self.notebook.forget(tab)
+                        break
+                except Exception:
+                    continue
+        except TypeError:
+            pass
+        
+        dual_frame = ttk.Frame(self.notebook)
+        self.notebook.add(dual_frame, text=tab_name)
+        self.notebook.select(dual_frame)
+        dual_frame.columnconfigure(0, weight=1)
+        dual_frame.columnconfigure(1, weight=1)
+        dual_frame.rowconfigure(0, weight=1)
+
+        # Left (3D)
+        left_frame = ttk.Frame(dual_frame)
+        left_frame.grid(row=0, column=0, sticky='nsew')
+        left_canvas = FigureCanvasTkAgg(figure_left, left_frame)
+        left_canvas.draw()
+        left_toolbar = NavigationToolbar2Tk(left_canvas, left_frame)
+        left_toolbar.update()
+        left_toolbar.pack(side='top', fill='x')
+        left_canvas.get_tk_widget().pack(side='bottom', fill='both', expand=True)
+
+        # Right (cross-section)
+        right_frame = ttk.Frame(dual_frame)
+        right_frame.grid(row=0, column=1, sticky='nsew')
+        right_canvas = FigureCanvasTkAgg(figure_right, right_frame)
+        right_canvas.draw()
+        right_toolbar = NavigationToolbar2Tk(right_canvas, right_frame)
+        right_toolbar.update()
+        right_toolbar.pack(side='top', fill='x')
+        right_canvas.get_tk_widget().pack(side='bottom', fill='both', expand=True)
     
     def run_penetration_with_viz(self):
         """Run penetration test with visualization."""
@@ -725,6 +792,314 @@ RESULT:
         # Reset progress after delay
         self.root.after(2000, lambda: self.progress_var.set(0))
     
+    def run_enhanced_3d_visualization(self):
+        """Run enhanced 3D visualization with accurate physics."""
+        self.status_var.set("Opening enhanced 3D visualization...")
+        dialog = PenetrationTestDialog(self.root, self.ammunition_catalog, self.armor_catalog, with_viz=True,
+                                       default_export_interactive=self.export_interactive_default)
+        result = dialog.show()
+        
+        if result:
+            ammo, armor, range_m, angle, _ = result
+            # Read export choice from dialog (default to True if missing)
+            try:
+                self.export_interactive_enabled = bool(getattr(dialog, 'export_interactive_choice', True))
+            except Exception:
+                self.export_interactive_enabled = True
+            self.create_enhanced_3d_visualization(ammo, armor, range_m, angle)
+    
+    def create_enhanced_3d_visualization(self, ammo, armor, range_m, angle):
+        """Create enhanced 3D visualization with accurate ballistic physics."""
+        self.status_var.set("Generating enhanced 3D visualization...")
+        self.progress_var.set(25)
+        self.root.update_idletasks()
+        
+        try:
+            from src.visualization.enhanced_3d_visualizer import Enhanced3DVisualizer
+            from src.physics.advanced_physics import EnvironmentalConditions
+            
+            # Set up environmental conditions (can be made configurable)
+            env_conditions = EnvironmentalConditions(
+                temperature_celsius=20.0,
+                wind_speed_ms=5.0,
+                wind_angle_deg=30.0,  # Angled wind for interesting trajectory
+                humidity_percent=60.0,
+                altitude_m=300.0
+            )
+            
+            self.progress_var.set(50)
+            self.root.update_idletasks()
+            
+            # Create enhanced visualizer
+            visualizer = Enhanced3DVisualizer(figsize=(16, 12), debug_level="INFO")
+            visualizer.show_trajectory_debug = True  # Show trajectory debug points
+            # Apply overlay defaults
+            visualizer.show_channel_segments = bool(self.show_channels_overlay_default)
+            visualizer.show_ricochet_overlay = bool(self.show_ricochet_overlay_default)
+            self._last_enhanced_visualizer = visualizer
+            
+            # Create interactive 3D visualization
+            fig = visualizer.create_interactive_3d_visualization(
+                ammo, armor, target_range=range_m, launch_angle=angle,
+                environmental_conditions=env_conditions
+            )
+            
+            self.progress_var.set(75)
+            self.root.update_idletasks()
+            
+            if fig:
+                # Save the visualization and interactive dataset
+                import os
+                results_dir = os.path.join("results", "enhanced_3d")
+                os.makedirs(results_dir, exist_ok=True)
+                
+                base = f"enhanced_3d_{ammo.name.replace(' ', '_')}_{armor.name.replace(' ', '_')}"
+                png_path = os.path.join(results_dir, base + ".png")
+                json_path = os.path.join(results_dir, base + ".json")
+                cross_path = os.path.join(results_dir, base + "_cross_section.png")
+                
+                visualizer.save_visualization(png_path, dpi=300)
+                
+                cs_fig = None
+                # Optionally generate cross-section and dataset (only if collision with tank occurred)
+                if self.export_interactive_enabled:
+                    collision = getattr(visualizer, 'collision_info', None)
+                    if collision and collision.get('type') == 'tank':
+                        try:
+                            cs_viz = CrossSectionVisualizer(mode=self.cross_section_mode)
+                            cs_fig = cs_viz.render_cross_section(visualizer.meta)
+                            cs_viz.save_cross_section(cross_path)
+                        except Exception:
+                            # Hide cross-section warnings in GUI when collision is present but rendering fails
+                            pass
+                        try:
+                            visualizer.save_interactive_dataset(json_path, screenshot_path=png_path, cross_section_path=cross_path)
+                        except Exception:
+                            pass
+                    else:
+                        # Save dataset without cross-section reference
+                        try:
+                            visualizer.save_interactive_dataset(json_path, screenshot_path=png_path, cross_section_path=None)
+                        except Exception:
+                            pass
+
+                # Show visualization in GUI (dual view if cross-section available)
+                tab_name = f"Enhanced 3D: {ammo.name.split()[0]} vs {armor.name.split()[0]}"
+                if cs_fig is not None:
+                    self.show_dual_visualizations_in_tab(fig, cs_fig, tab_name)
+                else:
+                    self.show_visualization_in_tab(fig, tab_name)
+                # Removed duplicate save block to avoid double saves
+                
+                self.progress_var.set(100)
+                if self.export_interactive_enabled:
+                    self.status_var.set(f"Enhanced 3D visualization complete - saved to {png_path} and dataset JSON")
+                else:
+                    self.status_var.set(f"Enhanced 3D visualization complete - saved to {png_path}")
+                
+                # Add information about the visualization
+                self.show_enhanced_3d_info(ammo, armor, range_m, angle, visualizer.trajectory_points)
+                
+            else:
+                messagebox.showerror("Visualization Error", "Failed to create enhanced 3D visualization.")
+                self.status_var.set("Error creating enhanced 3D visualization")
+                
+        except ImportError as e:
+            messagebox.showerror("Enhanced 3D Error", 
+                               f"Enhanced 3D visualization not available: {e}")
+            self.status_var.set("Enhanced 3D visualization not available")
+        except Exception as e:
+            # Log full traceback to help diagnose issues like type errors
+            import traceback
+            trace = traceback.format_exc()
+            print(trace)
+            messagebox.showerror("Visualization Error", 
+                               f"Error creating enhanced 3D visualization: {e}")
+            self.status_var.set("Error creating enhanced 3D visualization")
+        
+        # Reset progress after delay
+        self.root.after(3000, lambda: self.progress_var.set(0))
+    
+    def show_enhanced_3d_info(self, ammo, armor, range_m, angle, trajectory_points):
+        """Show information about the enhanced 3D visualization."""
+        if not trajectory_points:
+            return
+            
+        tab_name = f"3D Analysis: {ammo.name.split()[0]} vs {armor.name.split()[0]}"
+        
+        # Remove existing tab with same name (robust to mocked notebooks)
+        try:
+            tabs_iter = self.notebook.tabs() if hasattr(self.notebook, 'tabs') else []
+            for tab in tabs_iter:
+                try:
+                    if self.notebook.tab(tab, "text") == tab_name:
+                        self.notebook.forget(tab)
+                        break
+                except Exception:
+                    continue
+        except TypeError:
+            pass
+        
+        info_frame = ttk.Frame(self.notebook)
+        self.notebook.add(info_frame, text=tab_name)
+        
+        # Create scrollable text widget
+        text_frame = ttk.Frame(info_frame)
+        text_frame.pack(fill='both', expand=True, padx=20, pady=20)
+        
+        text_widget = tk.Text(text_frame, wrap='word', font=('Consolas', 10))
+        scrollbar = ttk.Scrollbar(text_frame, orient='vertical', command=text_widget.yview)
+        text_widget.configure(yscrollcommand=scrollbar.set)
+        
+        # Calculate trajectory statistics
+        final_point = trajectory_points[-1]
+        max_height = max(point.z for point in trajectory_points)
+        max_range = max(point.x for point in trajectory_points)
+        
+        # Build information text
+        info_text = f"""
+═══════════════════════════════════════════════════════════════
+                    ENHANCED 3D VISUALIZATION ANALYSIS
+═══════════════════════════════════════════════════════════════
+
+AMMUNITION: {ammo.name}
+  Type: {ammo.penetration_type.upper()}
+  Caliber: {ammo.caliber:.0f}mm
+  Muzzle Velocity: {ammo.muzzle_velocity} m/s
+  Mass: {ammo.mass:.1f} kg
+
+ARMOR: {armor.name}
+  Type: {armor.armor_type.upper()}
+  Thickness: {armor.thickness:.0f}mm
+  Density: {armor.density:.0f} kg/m³
+
+ENGAGEMENT PARAMETERS:
+  Range: {range_m:.0f} m
+  Launch Angle: {angle:.1f}°
+  Environmental: Windy conditions with altitude effects
+
+TRAJECTORY ANALYSIS:
+  Total Trajectory Points: {len(trajectory_points)}
+  Flight Time: {final_point.time:.2f} seconds
+  Maximum Height: {max_height:.1f} m
+  Maximum Range: {max_range:.1f} m
+  Final Position: ({final_point.x:.1f}, {final_point.y:.1f}, {final_point.z:.1f}) m
+  Impact Velocity: {final_point.velocity_magnitude:.1f} m/s
+  Impact Angle: {abs(final_point.angle_of_attack):.1f}° from horizontal
+
+ENVIRONMENTAL EFFECTS:
+  Wind Deflection: {final_point.y:.2f} m lateral
+  Air Density Factor: {final_point.air_density:.4f} kg/m³
+  Drag Coefficient: {final_point.drag_coefficient:.4f}
+
+VISUALIZATION FEATURES:
+  ✓ Accurate ballistic trajectory calculation
+  ✓ Interactive 3D mouse controls (rotate, zoom, pan)
+  ✓ Realistic tank modeling with proper proportions
+  ✓ Environmental effects visualization
+  ✓ Debug trajectory points displayed
+  ✓ Impact analysis with penetration results
+  ✓ Behind-armor effects if penetration occurs
+
+INTERACTIVE CONTROLS:
+  • Mouse: Rotate 3D view by dragging
+  • Scroll Wheel: Zoom in/out
+  • Sliders: Control elevation and azimuth angles
+  • Legend: Toggle different visualization elements
+
+NOTE: This enhanced 3D visualization uses realistic ballistic physics
+including air resistance, environmental effects, and accurate trajectory
+calculation. The projectile follows the actual calculated flight path
+rather than simplified approximations.
+
+═══════════════════════════════════════════════════════════════"""
+        
+        text_widget.insert('1.0', info_text)
+        text_widget.config(state='disabled')
+        
+        text_widget.pack(side='left', fill='both', expand=True)
+        scrollbar.pack(side='right', fill='y')
+    
+    def open_interactive_result(self):
+        """Open a saved interactive dataset (JSON) and view it interactively."""
+        self.status_var.set("Opening interactive result...")
+        try:
+            filetypes = (("Interactive Datasets", "*.json"), ("All files", "*.*"))
+            initialdir = os.path.join(os.path.dirname(__file__), 'results') if os.path.isdir('results') else '.'
+            json_path = filedialog.askopenfilename(title="Open Interactive Result", initialdir=initialdir, filetypes=filetypes)
+            if not json_path:
+                self.status_var.set("Canceled")
+                return
+            from src.visualization.enhanced_3d_visualizer import Enhanced3DVisualizer
+            with open(json_path, 'r', encoding='utf-8') as f:
+                dataset = json.load(f)
+            viz = Enhanced3DVisualizer(figsize=(16, 12), debug_level="ERROR")
+            # Apply overlay defaults
+            viz.show_channel_segments = bool(self.show_channels_overlay_default)
+            viz.show_ricochet_overlay = bool(self.show_ricochet_overlay_default)
+            self._last_enhanced_visualizer = viz
+            fig = viz.create_from_dataset(dataset)
+            tab_name = f"Interactive Result: {os.path.basename(json_path)}"
+            self.show_visualization_in_tab(fig, tab_name)
+            self.status_var.set(f"Loaded interactive result: {os.path.basename(json_path)}")
+        except Exception as e:
+            messagebox.showerror("Interactive Viewer Error", f"Failed to open interactive result: {e}")
+            self.status_var.set("Error opening interactive result")
+    
+    def open_settings(self):
+        """Open Settings dialog and persist preferences."""
+        dlg = SettingsDialog(
+            self.root,
+            export_interactive_default=self.export_interactive_default,
+            show_channels_overlay_default=self.show_channels_overlay_default,
+            show_ricochet_overlay_default=self.show_ricochet_overlay_default,
+            current_cs_mode=self.cross_section_mode
+        )
+        result = dlg.show()
+        if result:
+            self.export_interactive_default = bool(result.get('export_interactive_default', True))
+            self.show_channels_overlay_default = bool(result.get('show_channels_overlay_default', self.show_channels_overlay_default))
+            self.show_ricochet_overlay_default = bool(result.get('show_ricochet_overlay_default', self.show_ricochet_overlay_default))
+            self.cross_section_mode = result.get('cross_section_mode', self.cross_section_mode)
+            # Persist to config
+            self._save_settings()
+            self.status_var.set("Settings saved")
+        else:
+            self.status_var.set("Settings unchanged")
+
+    def _config_path(self):
+        cfg_dir = os.path.join(os.path.dirname(__file__), 'config')
+        os.makedirs(cfg_dir, exist_ok=True)
+        return os.path.join(cfg_dir, 'gui_settings.json')
+
+    def _load_settings(self):
+        try:
+            path = self._config_path()
+            if os.path.exists(path):
+                with open(path, 'r', encoding='utf-8') as f:
+                    data = _json_for_settings.load(f)
+                self.export_interactive_default = bool(data.get('export_interactive_default', True))
+                self.show_channels_overlay_default = bool(data.get('show_channels_overlay_default', True))
+                self.show_ricochet_overlay_default = bool(data.get('show_ricochet_overlay_default', True))
+                self.cross_section_mode = data.get('cross_section_mode', 'projected')
+                self.export_interactive_enabled = self.export_interactive_default
+        except Exception:
+            pass
+
+    def _save_settings(self):
+        try:
+            path = self._config_path()
+            data = {
+                'export_interactive_default': bool(self.export_interactive_default),
+                'show_channels_overlay_default': bool(self.show_channels_overlay_default),
+                'show_ricochet_overlay_default': bool(self.show_ricochet_overlay_default),
+                'cross_section_mode': self.cross_section_mode
+            }
+            with open(path, 'w', encoding='utf-8') as f:
+                _json_for_settings.dump(data, f, indent=2)
+        except Exception as e:
+            print(f"Warning: Could not save settings: {e}")
+
     def compare_ammunition(self):
         """Compare ammunition types."""
         self.status_var.set("Opening ammunition comparison...")

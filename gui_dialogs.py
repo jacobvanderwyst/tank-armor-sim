@@ -11,11 +11,12 @@ from typing import Tuple, List, Optional, Union
 class PenetrationTestDialog:
     """Dialog for penetration test parameters."""
     
-    def __init__(self, parent, ammunition_catalog, armor_catalog, with_viz=False):
+    def __init__(self, parent, ammunition_catalog, armor_catalog, with_viz=False, default_export_interactive=True):
         self.parent = parent
         self.ammunition_catalog = ammunition_catalog
         self.armor_catalog = armor_catalog
         self.with_viz = with_viz
+        self.default_export_interactive = default_export_interactive
         self.result = None
         
     def show(self) -> Optional[Tuple]:
@@ -93,6 +94,15 @@ class PenetrationTestDialog:
         viz_check = ttk.Checkbutton(main_frame, text="Generate Visualization", variable=self.viz_var)
         viz_check.pack(anchor='w', pady=(10, 0))
         
+        # Interactive export option (only relevant if generating visualization)
+        default_export = bool(self.default_export_interactive) if self.with_viz else False
+        self.export_interactive_var = tk.BooleanVar(value=default_export)
+        export_check = ttk.Checkbutton(main_frame, text="Export interactive dataset (JSON + cross-section)",
+                                      variable=self.export_interactive_var)
+        export_check.pack(anchor='w', pady=(5, 0))
+        if not self.with_viz:
+            export_check.state(['disabled'])
+        
         # Buttons
         button_frame = ttk.Frame(main_frame)
         button_frame.pack(fill='x', pady=(20, 0))
@@ -128,6 +138,8 @@ class PenetrationTestDialog:
             range_m = float(self.range_var.get())
             angle = float(self.angle_var.get())
             with_viz = self.viz_var.get()
+            # store export choice for caller to read
+            self.export_interactive_choice = bool(self.export_interactive_var.get())
             
             if range_m < 50 or range_m > 5000:
                 messagebox.showerror("Range Error", "Range must be between 50 and 5000 meters.")
@@ -479,5 +491,74 @@ class ComparisonDialog:
     
     def _cancel(self):
         """Handle Cancel button."""
+        self.result = None
+        self.dialog.destroy()
+
+
+class SettingsDialog:
+    """Application settings dialog."""
+    def __init__(self, parent, export_interactive_default: bool = True,
+                 show_channels_overlay_default: bool = True,
+                 show_ricochet_overlay_default: bool = True,
+                 current_cs_mode: str = 'projected'):
+        self.parent = parent
+        self.export_interactive_default = bool(export_interactive_default)
+        self.show_channels_overlay_default = bool(show_channels_overlay_default)
+        self.show_ricochet_overlay_default = bool(show_ricochet_overlay_default)
+        self.current_cs_mode = current_cs_mode if current_cs_mode in ('projected', 'true_path') else 'projected'
+        self.result = None
+
+    def show(self):
+        self.dialog = tk.Toplevel(self.parent)
+        self.dialog.title("Settings")
+        self.dialog.geometry("420x280")
+        self.dialog.resizable(False, False)
+        self.dialog.grab_set()
+        self.dialog.transient(self.parent)
+
+        main_frame = ttk.Frame(self.dialog, padding="20")
+        main_frame.pack(fill='both', expand=True)
+
+        ttk.Label(main_frame, text="General Settings", font=('TkDefaultFont', 11, 'bold')).pack(anchor='w', pady=(0, 10))
+        
+        self.export_var = tk.BooleanVar(value=self.export_interactive_default)
+        ttk.Checkbutton(main_frame, text="Export interactive dataset by default",
+                        variable=self.export_var).pack(anchor='w', pady=(0,6))
+
+        # Overlay toggles
+        ttk.Label(main_frame, text="Overlay visibility", font=('TkDefaultFont', 10, 'bold')).pack(anchor='w', pady=(10, 4))
+        self.show_channels_var = tk.BooleanVar(value=self.show_channels_overlay_default)
+        ttk.Checkbutton(main_frame, text="Show penetration channel overlays",
+                        variable=self.show_channels_var).pack(anchor='w', pady=(0,4))
+        self.show_ricochet_var = tk.BooleanVar(value=self.show_ricochet_overlay_default)
+        ttk.Checkbutton(main_frame, text="Show ricochet overlays",
+                        variable=self.show_ricochet_var).pack(anchor='w', pady=(0,8))
+
+        ttk.Label(main_frame, text="Cross-section mode", font=('TkDefaultFont', 10, 'bold')).pack(anchor='w', pady=(8, 4))
+        self.cs_mode_var = tk.StringVar(value=self.current_cs_mode)
+        modes_frame = ttk.Frame(main_frame)
+        modes_frame.pack(anchor='w', fill='x')
+        ttk.Radiobutton(modes_frame, text='Projected', value='projected', variable=self.cs_mode_var).pack(side='left', padx=(0,12))
+        ttk.Radiobutton(modes_frame, text='True-path (annotated)', value='true_path', variable=self.cs_mode_var).pack(side='left')
+
+        # Buttons
+        btn_frame = ttk.Frame(main_frame)
+        btn_frame.pack(fill='x', pady=(20, 0))
+        ttk.Button(btn_frame, text="Cancel", command=self._cancel).pack(side='right', padx=(10, 0))
+        ttk.Button(btn_frame, text="Save", command=self._ok).pack(side='right')
+
+        self.dialog.wait_window()
+        return self.result
+
+    def _ok(self):
+        self.result = { 
+            'export_interactive_default': bool(self.export_var.get()),
+            'show_channels_overlay_default': bool(self.show_channels_var.get()),
+            'show_ricochet_overlay_default': bool(self.show_ricochet_var.get()),
+            'cross_section_mode': self.cs_mode_var.get()
+        }
+        self.dialog.destroy()
+
+    def _cancel(self):
         self.result = None
         self.dialog.destroy()

@@ -58,6 +58,60 @@ tank-armor-sim/
 - Advanced physics demonstrations with logging
 - Comprehensive catalogs with historical data
 
+## 🧊 Enhanced 3D Visualization (New)
+
+- Interactive 3D view with accurate ballistic trajectory rendering
+- Multi-part mesh penetration channels with per-part residuals and costs
+- Overpenetration exit markers and behind-armor spall cone for kinetic rounds
+- Ricochet modeling with outcomes: ricochet, shattering, embedding
+- Cross-section rendering at impact showing armor stack and penetration channel
+- Export/import of interactive datasets to replay visualizations without recompute
+
+GUI usage:
+- In the main menu, click "Enhanced 3D Viz" to generate a scene.
+- Use Settings → Overlay visibility to toggle:
+  - Show penetration channel overlays
+  - Show ricochet overlays
+- Use "Open Interactive Result" to load a saved dataset JSON.
+
+CLI viewer usage:
+- python interactive_viewer.py results/enhanced_3d/enhanced_3d_<...>.json [--animate] [--no-channels] [--no-ricochet]
+
+Interactive dataset fields (excerpt):
+```json
+{
+  "type": "enhanced_3d_result",
+  "trajectory": [ /* points with x,y,z,v,time,air */ ],
+  "impact_analysis": {
+    "penetrates": true,
+    "penetration_mm": 320.0,
+    "per_part_sequence": [ /* per-part segments */ ],
+    "channel_segments": [
+      {"part": "hull", "start": {"x":5.0,"y":0.0,"z":1.0}, "end": {"x":5.1,"y":0.0,"z":0.8}, "partial": false}
+    ],
+    "overpenetration": false,
+    "ricochet": true,
+    "ricochet_outcome": "ricochet",  // or "shattering" | "embedding"
+    "ricochet_point": {"x":5.0, "y":0.0, "z":1.0},
+    "ricochet_direction": {"x":0.9, "y":0.1, "z":0.0},
+    "ricochet_details": {
+      "probability": 0.68,
+      "deflection_angle_deg": 22.0,
+      "exit_velocity_ms": 820.0,
+      "energy_retained": 0.62
+    }
+  },
+  "assets": {
+    "screenshot_png": "results/enhanced_3d/...png",
+    "cross_section_png": "results/enhanced_3d/..._cross_section.png"
+  }
+}
+```
+
+Tests covering these features:
+- tests/enhanced_3d/test_ricochet_and_channels.py
+- tests/enhanced_3d/test_cross_section_and_gui_toggles.py
+
 ## 🎣 About
 
 Educational simulation demonstrating advanced Python development, physics modeling, and GUI/CLI design. Features comprehensive testing, logging systems, and professional visualization capabilities.
