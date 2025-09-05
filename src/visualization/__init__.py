@@ -10,5 +10,6 @@ This module provides graphical representations of:
 
 from .ballistics_visualizer import BallisticsVisualizer
 from .penetration_visualizer import PenetrationVisualizer
+from .comparison_visualizer import ComparisonVisualizer
 
-__all__ = ['BallisticsVisualizer', 'PenetrationVisualizer']
+__all__ = ['BallisticsVisualizer', 'PenetrationVisualizer', 'ComparisonVisualizer']

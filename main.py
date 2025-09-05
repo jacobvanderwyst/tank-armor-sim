@@ -11,7 +11,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
 from ammunition import APFSDS, AP, APCR, HEAT, HESH
 from armor import RHA, CompositeArmor, ReactiveArmor, SpacedArmor
-from visualization import BallisticsVisualizer, PenetrationVisualizer
+from visualization import BallisticsVisualizer, PenetrationVisualizer, ComparisonVisualizer
 from typing import List, Dict, Any
 
 
@@ -371,6 +371,153 @@ class TankArmorSimulator:
         except Exception as e:
             print(f"\nError generating trajectory: {e}")
     
+    def compare_ammunition(self):
+        """Compare multiple ammunition types against selected armor."""
+        print("\n--- AMMUNITION COMPARISON ANALYSIS ---")
+        
+        # Select target armor first
+        print("\nSelect Target Armor:")
+        armor_list = list(self.armor_catalog.keys())
+        for i, armor_name in enumerate(armor_list, 1):
+            armor = self.armor_catalog[armor_name]
+            print(f"{i}. {armor_name} ({armor.armor_type.upper()}, {armor.thickness}mm)")
+        
+        try:
+            armor_choice = int(input(f"\nSelect target armor (1-{len(armor_list)}): ")) - 1
+            if armor_choice < 0 or armor_choice >= len(armor_list):
+                print("Invalid selection!")
+                return
+            selected_armor = self.armor_catalog[armor_list[armor_choice]]
+        except ValueError:
+            print("Invalid input!")
+            return
+        
+        # Select multiple ammunition types for comparison
+        print("\n--- SELECT AMMUNITION FOR COMPARISON ---")
+        print("Available Ammunition:")
+        ammo_list = list(self.ammunition_catalog.keys())
+        for i, ammo_name in enumerate(ammo_list, 1):
+            ammo = self.ammunition_catalog[ammo_name]
+            print(f"{i}. {ammo_name} ({ammo.penetration_type.upper()})")
+        
+        selected_ammo = []
+        print("\nSelect ammunition to compare (enter numbers separated by commas, e.g., 1,2,4):")
+        try:
+            choices = input("Ammunition selection: ").strip().split(',')
+            for choice in choices:
+                idx = int(choice.strip()) - 1
+                if 0 <= idx < len(ammo_list):
+                    selected_ammo.append(self.ammunition_catalog[ammo_list[idx]])
+                else:
+                    print(f"Invalid choice: {choice}")
+                    return
+            
+            if len(selected_ammo) < 2:
+                print("Please select at least 2 ammunition types for comparison.")
+                return
+                
+        except ValueError:
+            print("Invalid input format!")
+            return
+        
+        # Generate comparison visualization
+        try:
+            print(f"\nGenerating ammunition comparison analysis...")
+            comparison_viz = ComparisonVisualizer()
+            comp_fig = comparison_viz.compare_ammunition(selected_ammo, selected_armor)
+            
+            # Save the comparison plot
+            ammo_names = '_vs_'.join([ammo.name.split()[0] for ammo in selected_ammo[:3]])  # Limit filename length
+            filename = f'ammo_comparison_{ammo_names}_{selected_armor.name.replace(" ", "_")}.png'
+            comparison_viz.save_plot(filename)
+            comparison_viz.show_plot()
+            
+            print(f"\nAmmunition comparison complete! Analysis shows:")
+            for ammo in selected_ammo:
+                pen = ammo.calculate_penetration(2000, 15)  # Standard test conditions
+                eff = selected_armor.get_effective_thickness(ammo.penetration_type, 15)
+                result = "PENETRATES" if pen > eff else "STOPPED BY"
+                print(f"- {ammo.name}: {result} {selected_armor.name} ({pen:.0f} vs {eff:.0f} mm RHA)")
+            
+        except ImportError:
+            print("\nComparison requires matplotlib, numpy, and seaborn. Please install dependencies:")
+            print("pip install -r requirements.txt")
+        except Exception as e:
+            print(f"\nError generating comparison: {e}")
+    
+    def compare_armor(self):
+        """Compare multiple armor types against selected ammunition."""
+        print("\n--- ARMOR COMPARISON ANALYSIS ---")
+        
+        # Select attacking ammunition first
+        print("\nSelect Attacking Ammunition:")
+        ammo_list = list(self.ammunition_catalog.keys())
+        for i, ammo_name in enumerate(ammo_list, 1):
+            ammo = self.ammunition_catalog[ammo_name]
+            print(f"{i}. {ammo_name} ({ammo.penetration_type.upper()})")
+        
+        try:
+            ammo_choice = int(input(f"\nSelect ammunition (1-{len(ammo_list)}): ")) - 1
+            if ammo_choice < 0 or ammo_choice >= len(ammo_list):
+                print("Invalid selection!")
+                return
+            selected_ammo = self.ammunition_catalog[ammo_list[ammo_choice]]
+        except ValueError:
+            print("Invalid input!")
+            return
+        
+        # Select multiple armor types for comparison
+        print("\n--- SELECT ARMOR FOR COMPARISON ---")
+        print("Available Armor:")
+        armor_list = list(self.armor_catalog.keys())
+        for i, armor_name in enumerate(armor_list, 1):
+            armor = self.armor_catalog[armor_name]
+            print(f"{i}. {armor_name} ({armor.armor_type.upper()}, {armor.thickness}mm)")
+        
+        selected_armor = []
+        print("\nSelect armor to compare (enter numbers separated by commas, e.g., 1,3,4):")
+        try:
+            choices = input("Armor selection: ").strip().split(',')
+            for choice in choices:
+                idx = int(choice.strip()) - 1
+                if 0 <= idx < len(armor_list):
+                    selected_armor.append(self.armor_catalog[armor_list[idx]])
+                else:
+                    print(f"Invalid choice: {choice}")
+                    return
+            
+            if len(selected_armor) < 2:
+                print("Please select at least 2 armor types for comparison.")
+                return
+                
+        except ValueError:
+            print("Invalid input format!")
+            return
+        
+        # Generate comparison visualization
+        try:
+            print(f"\nGenerating armor comparison analysis...")
+            comparison_viz = ComparisonVisualizer()
+            comp_fig = comparison_viz.compare_armor(selected_armor, selected_ammo)
+            
+            # Save the comparison plot
+            armor_names = '_vs_'.join([armor.name.split()[0] for armor in selected_armor[:3]])  # Limit filename length
+            filename = f'armor_comparison_{armor_names}_{selected_ammo.name.replace(" ", "_")}.png'
+            comparison_viz.save_plot(filename)
+            comparison_viz.show_plot()
+            
+            print(f"\nArmor comparison complete! Analysis shows:")
+            for armor in selected_armor:
+                pen = selected_ammo.calculate_penetration(2000, 15)  # Standard test conditions
+                eff = armor.get_effective_thickness(selected_ammo.penetration_type, 15)
+                result = "STOPS" if eff >= pen else "PENETRATED BY"
+                print(f"- {armor.name}: {result} {selected_ammo.name} ({eff:.0f} vs {pen:.0f} mm RHA)")
+            
+        except ImportError:
+            print("\nComparison requires matplotlib, numpy, and seaborn. Please install dependencies:")
+            print("pip install -r requirements.txt")
+        except Exception as e:
+            print(f"\nError generating comparison: {e}")
     def view_ammunition_catalog(self):
         """Display detailed ammunition catalog."""
         print("\n" + "="*60)
@@ -417,9 +564,9 @@ class TankArmorSimulator:
                 elif choice == '3':
                     self.view_ballistic_trajectory()
                 elif choice == '4':
-                    print("Ammunition comparison feature coming soon!")
+                    self.compare_ammunition()
                 elif choice == '5':
-                    print("Armor comparison feature coming soon!")
+                    self.compare_armor()
                 elif choice == '6':
                     self.view_ammunition_catalog()
                 elif choice == '7':

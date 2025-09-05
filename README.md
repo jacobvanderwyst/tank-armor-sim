@@ -12,10 +12,13 @@ This project simulates the complex physics of armor penetration, taking into acc
 
 ## Features
 
+- **Dual Interface**: Modern GUI and CLI modes for different user preferences
 - **Realistic Ballistics**: Accurate modeling of projectile velocity, energy transfer, and penetration mechanics
 - **Multiple Ammunition Types**: Support for various anti-tank rounds with different penetration characteristics
 - **Diverse Armor Systems**: Different armor types with realistic protection values and angles
-- **Interactive Simulation**: Command-line interface for running penetration tests
+- **Advanced Visualizations**: 4-panel penetration analysis and ballistic trajectory plots
+- **Comprehensive Comparisons**: Side-by-side ammunition and armor analysis tools
+- **Interactive Simulation**: Both graphical and command-line interfaces for running tests
 - **Historical Data**: Based on real-world tank specifications and combat performance
 
 ## Ammunition Types
@@ -39,7 +42,9 @@ This project simulates the complex physics of armor penetration, taking into acc
 1. Clone this repository
 2. Install Python 3.8+
 3. Install required dependencies: `pip install -r requirements.txt`
-4. Run the simulation: `python main.py`
+4. Run the simulation:
+   - **GUI Mode (Recommended)**: `python launcher.py` or `python gui_main.py`
+   - **CLI Mode**: `python launcher.py --cli` or `python main.py`
 
 ## Project Structure
 
@@ -58,16 +63,39 @@ tank-armor-sim/
 
 ## Usage
 
-Run the main simulation:
+### GUI Mode (Recommended)
+Launch the graphical interface:
 ```bash
-python main.py
+python launcher.py
 ```
 
-The simulator will prompt you to:
+The GUI provides:
+- Intuitive point-and-click interface
+- Visual ammunition and armor catalogs
+- Integrated visualization display
+- Tabbed results with embedded charts
+- Progress indicators and status updates
+
+### CLI Mode (Advanced Users)
+Run the command-line interface:
+```bash
+python launcher.py --cli
+```
+
+The CLI simulator will prompt you to:
 1. Select ammunition type
-2. Choose target armor configuration
+2. Choose target armor configuration  
 3. Set engagement parameters (range, angle, etc.)
 4. View penetration results and analysis
+5. Generate visualizations (saved as PNG files)
+
+### Universal Launcher
+The launcher automatically detects the best interface:
+```bash
+python launcher.py --help     # Show all options
+python launcher.py --gui      # Force GUI mode
+python launcher.py --cli      # Force CLI mode
+```
 
 ## About This Project
 
