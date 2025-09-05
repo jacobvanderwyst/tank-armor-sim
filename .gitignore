@@ -84,7 +84,10 @@ notes/
 temp/
 scratch/
 
+# Logs - include folder but exclude contents
+logs/*
+!logs/.gitkeep
+
 # Temporary files
 *.tmp
 *.temp
-*.log

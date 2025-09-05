@@ -22,7 +22,8 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
 from src.ammunition import APFSDS, AP, APCR, HEAT, HESH
 from src.armor import RHA, CompositeArmor, ReactiveArmor, SpacedArmor
-from src.visualization import BallisticsVisualizer, PenetrationVisualizer, ComparisonVisualizer
+from logging_system import get_logger
+from typing import Dict, Any, Optional, List
 from gui_dialogs import PenetrationTestDialog, TrajectoryDialog, ComparisonDialog
 
 
@@ -199,6 +200,7 @@ class TankArmorSimulatorGUI:
             ("Ballistic Trajectory", self.view_ballistic_trajectory),
             ("Compare Ammunition", self.compare_ammunition),
             ("Compare Armor", self.compare_armor),
+            ("Advanced Physics Demo", self.demonstrate_advanced_physics),
             ("Ammunition Catalog", self.view_ammunition_catalog),
             ("Armor Catalog", self.view_armor_catalog),
             ("Help & Documentation", self.show_help),
@@ -435,23 +437,75 @@ Built with Python, tkinter, matplotlib, and numpy.
             self.execute_penetration_test(ammo, armor, range_m, angle, with_viz)
     
     def execute_penetration_test(self, ammo, armor, range_m, angle, with_viz=False):
-        """Execute penetration test and display results."""
-        self.status_var.set("Calculating penetration...")
+        """Execute penetration test and display results with advanced physics."""
+        self.status_var.set("Calculating penetration with advanced physics...")
         self.progress_var.set(25)
         self.root.update_idletasks()
         
-        # Calculate results
-        penetration = ammo.calculate_penetration(range_m, angle)
+        # Initialize logging
+        logger = get_logger()
+        
+        # Enable advanced physics by default
+        ammo.enable_advanced_physics()
+        armor.enable_advanced_physics()
+        
+        # Set up advanced physics conditions
+        try:
+            from src.physics.advanced_physics import EnvironmentalConditions
+            from src.physics.temperature_effects import TemperatureConditions
+            from src.physics.ricochet_calculator import RicochetParameters
+            
+            # Standard conditions (can be made configurable later)
+            env_conditions = EnvironmentalConditions(
+                temperature_celsius=15.0,  # Standard temperature
+                altitude_m=0.0,
+                humidity_percent=50.0
+            )
+            
+            temp_conditions = TemperatureConditions(
+                ambient_celsius=15.0,
+                propellant_celsius=15.0,
+                armor_celsius=15.0,
+                barrel_celsius=15.0
+            )
+            
+            velocity_at_impact = ammo.get_velocity_at_range(range_m)
+            ricochet_params = RicochetParameters(
+                impact_angle_deg=angle,
+                impact_velocity_ms=velocity_at_impact,
+                projectile_hardness=0.9,
+                target_hardness=0.8
+            )
+            
+            # Calculate advanced results
+            advanced_results = ammo.calculate_advanced_penetration(
+                armor, range_m, angle,
+                environmental_conditions=env_conditions,
+                temperature_conditions=temp_conditions,
+                ricochet_params=ricochet_params
+            )
+            
+            # Use advanced results
+            penetration = advanced_results['final_penetration']
+            velocity_at_impact = advanced_results['velocity_at_target']
+            
+        except ImportError:
+            # Fallback to basic calculations if advanced physics not available
+            self.status_var.set("Advanced physics not available, using basic calculations...")
+            penetration = ammo.calculate_penetration(range_m, angle)
+            velocity_at_impact = ammo.get_velocity_at_range(range_m)
+            advanced_results = None
+        
         effective_thickness = armor.get_effective_thickness(ammo.penetration_type, angle)
-        velocity_at_impact = ammo.get_velocity_at_range(range_m)
         can_defeat = armor.can_defeat(penetration, ammo.penetration_type, angle)
         
         self.progress_var.set(75)
         self.root.update_idletasks()
         
-        # Create results tab
+        # Create results tab with advanced physics data
         self.show_penetration_results(ammo, armor, range_m, angle, penetration, 
-                                    effective_thickness, velocity_at_impact, can_defeat)
+                                    effective_thickness, velocity_at_impact, can_defeat,
+                                    advanced_results)
         
         # Generate visualization if requested
         if with_viz:
@@ -472,6 +526,19 @@ Built with Python, tkinter, matplotlib, and numpy.
             except Exception as e:
                 messagebox.showerror("Visualization Error", f"Error generating visualization: {e}")
         
+        # Log the penetration test results
+        result_text = "ARMOR_DEFEATS" if can_defeat else "PROJECTILE_PENETRATES"
+        logger.log_penetration_test(
+            ammunition_name=ammo.name,
+            armor_name=armor.name,
+            angle=angle,
+            distance=range_m,
+            penetration=penetration,
+            effective_thickness=effective_thickness,
+            result=result_text,
+            advanced_results=advanced_results
+        )
+        
         self.progress_var.set(100)
         self.status_var.set("Penetration test complete")
         
@@ -479,8 +546,8 @@ Built with Python, tkinter, matplotlib, and numpy.
         self.root.after(2000, lambda: self.progress_var.set(0))
     
     def show_penetration_results(self, ammo, armor, range_m, angle, penetration, 
-                               effective_thickness, velocity, can_defeat):
-        """Show penetration test results in a new tab."""
+                               effective_thickness, velocity, can_defeat, advanced_results=None):
+        """Show penetration test results in a new tab with advanced physics data."""
         tab_name = f"Results: {ammo.name.split()[0]} vs {armor.name.split()[0]}"
         
         # Remove existing tab with same name
@@ -506,9 +573,10 @@ Built with Python, tkinter, matplotlib, and numpy.
         margin_type = 'Safety Margin' if can_defeat else 'Overmatch'
         result_symbol = '❌ ARMOR DEFEATS PROJECTILE' if can_defeat else '✅ PROJECTILE PENETRATES ARMOR'
         
+        # Build results text with advanced physics information
         results_text = f"""
 ═══════════════════════════════════════════════════════════════
-                    PENETRATION TEST RESULTS
+              PENETRATION TEST RESULTS (ADVANCED PHYSICS)
 ═══════════════════════════════════════════════════════════════
 
 AMMUNITION: {ammo.name}
@@ -534,9 +602,40 @@ CALCULATIONS:
 
 RESULT:
   {result_symbol}
-
-═══════════════════════════════════════════════════════════════
-        """
+"""
+        
+        # Add advanced physics details if available
+        if advanced_results:
+            results_text += "\n--- ADVANCED PHYSICS ANALYSIS ---\n"
+            
+            if advanced_results.get('base_penetration'):
+                results_text += f"  Base Penetration: {advanced_results['base_penetration']:.1f} mm RHA\n"
+                results_text += f"  Enhanced Penetration: {advanced_results['final_penetration']:.1f} mm RHA\n"
+            
+            if advanced_results.get('ricochet_analysis'):
+                ricochet = advanced_results['ricochet_analysis']
+                results_text += f"\nRicochet Analysis:\n"
+                results_text += f"  Ricochet Probability: {ricochet.get('ricochet_probability', 0)*100:.1f}%\n"
+                results_text += f"  Predicted Outcome: {ricochet.get('predicted_outcome', 'N/A').upper()}\n"
+                results_text += f"  Critical Angle: {ricochet.get('critical_angle', 0):.1f}°\n"
+            
+            if advanced_results.get('temperature_analysis'):
+                temp = advanced_results['temperature_analysis']
+                results_text += f"\nTemperature Effects:\n"
+                results_text += f"  Velocity Modifier: {temp.get('velocity_modifier', 1.0):.3f}\n"
+                results_text += f"  Penetration Modifier: {temp.get('penetration_modifier', 1.0):.3f}\n"
+                results_text += f"  Propellant Efficiency: {temp.get('propellant_efficiency', 1.0):.3f}\n"
+            
+            if advanced_results.get('advanced_effects'):
+                effects = advanced_results['advanced_effects'].get('ballistic_result')
+                if effects and hasattr(effects, 'environmental_effects'):
+                    env_effects = effects.environmental_effects
+                    results_text += f"\nEnvironmental Effects:\n"
+                    results_text += f"  Temperature: {env_effects.get('temperature_effect', 0)*100:+.1f}%\n"
+                    results_text += f"  Altitude: {env_effects.get('altitude_effect', 0)*100:+.1f}%\n"
+                    results_text += f"  Humidity: {env_effects.get('humidity_effect', 0)*100:+.1f}%\n"
+        
+        results_text += "\n═══════════════════════════════════════════════════════════════"
         
         text_widget.insert('1.0', results_text)
         text_widget.config(state='disabled')
@@ -679,6 +778,219 @@ RESULT:
         
         # Reset progress after delay
         self.root.after(2000, lambda: self.progress_var.set(0))
+    
+    def demonstrate_advanced_physics(self):
+        """Demonstrate advanced physics features in GUI."""
+        self.status_var.set("Loading advanced physics demonstration...")
+        
+        # Check if advanced physics modules are available
+        try:
+            from src.physics.advanced_physics import AdvancedPhysicsEngine, EnvironmentalConditions
+            from src.physics.temperature_effects import TemperatureEffects, TemperatureConditions
+            from src.physics.ricochet_calculator import RicochetCalculator, RicochetParameters
+            from src.physics.damage_system import ArmorDamageSystem
+        except ImportError as e:
+            messagebox.showerror("Advanced Physics Error", 
+                               f"Advanced physics modules not available: {e}")
+            self.status_var.set("Error loading advanced physics")
+            return
+        
+        self.progress_var.set(25)
+        
+        # Create demonstration tab
+        tab_name = "Advanced Physics Demo"
+        
+        # Remove existing tab with same name
+        for tab in self.notebook.tabs():
+            if self.notebook.tab(tab, "text") == tab_name:
+                self.notebook.forget(tab)
+                break
+        
+        demo_frame = ttk.Frame(self.notebook)
+        self.notebook.add(demo_frame, text=tab_name)
+        self.notebook.select(demo_frame)
+        
+        # Create scrollable text widget
+        text_frame = ttk.Frame(demo_frame)
+        text_frame.pack(fill='both', expand=True, padx=20, pady=20)
+        
+        text_widget = tk.Text(text_frame, wrap='word', font=('Consolas', 9))
+        scrollbar = ttk.Scrollbar(text_frame, orient='vertical', command=text_widget.yview)
+        text_widget.configure(yscrollcommand=scrollbar.set)
+        
+        # Generate advanced physics demonstration
+        demo_text = self._generate_advanced_physics_demo()
+        
+        text_widget.insert('1.0', demo_text)
+        text_widget.config(state='disabled')
+        
+        text_widget.pack(side='left', fill='both', expand=True)
+        scrollbar.pack(side='right', fill='y')
+        
+        self.progress_var.set(100)
+        self.status_var.set("Advanced physics demonstration complete")
+        
+        # Reset progress after delay
+        self.root.after(2000, lambda: self.progress_var.set(0))
+    
+    def _generate_advanced_physics_demo(self):
+        """Generate advanced physics demonstration text."""
+        import random
+        from src.physics.advanced_physics import AdvancedPhysicsEngine, EnvironmentalConditions
+        from src.physics.temperature_effects import TemperatureEffects, TemperatureConditions
+        from src.physics.ricochet_calculator import RicochetCalculator, RicochetParameters
+        
+        # Select test ammunition and armor
+        ammo = self.ammunition_catalog[0]  # M829A4 APFSDS
+        armor = self.armor_catalog[1]      # 200mm RHA
+        
+        # Enable advanced physics
+        ammo.enable_advanced_physics()
+        armor.enable_advanced_physics()
+        
+        demo_text = """
+═══════════════════════════════════════════════════════════════
+                    ADVANCED PHYSICS DEMONSTRATION
+═══════════════════════════════════════════════════════════════
+
+This demonstration showcases the advanced physics engine featuring:
+• Complex environmental ballistics
+• Multi-hit armor damage accumulation
+• Ricochet probability analysis
+• Temperature effects on performance
+
+"""
+        
+        # Test setup
+        range_m = 2000.0
+        angle = 15.0
+        
+        demo_text += f"""TEST SETUP:
+  Ammunition: {ammo.name}
+  Target: {armor.name}
+  Range: {range_m:.0f}m
+  Impact Angle: {angle}°
+
+"""
+        
+        # Standard calculation
+        base_pen = ammo.calculate_penetration(range_m, angle)
+        base_vel = ammo.get_velocity_at_range(range_m)
+        eff_thickness = armor.get_effective_thickness(ammo.penetration_type, angle)
+        
+        demo_text += f"""--- STANDARD CALCULATION ---
+Penetration capability: {base_pen:.1f} mm RHA
+Velocity at target: {base_vel:.1f} m/s
+Effective armor thickness: {eff_thickness:.1f} mm RHA
+Result: {'ARMOR DEFEATS PROJECTILE' if base_pen < eff_thickness else 'PROJECTILE PENETRATES'}
+
+"""
+        
+        # Advanced physics calculation
+        env_conditions = EnvironmentalConditions(
+            temperature_celsius=45.0,
+            altitude_m=1500.0,
+            humidity_percent=20.0,
+            wind_speed_ms=10.0
+        )
+        
+        temp_conditions = TemperatureConditions(
+            ambient_celsius=45.0,
+            propellant_celsius=50.0,
+            armor_celsius=55.0,
+            barrel_celsius=40.0
+        )
+        
+        ricochet_params = RicochetParameters(
+            impact_angle_deg=angle,
+            impact_velocity_ms=base_vel,
+            projectile_hardness=0.9,
+            target_hardness=0.8
+        )
+        
+        result = ammo.calculate_advanced_penetration(
+            armor, range_m, angle,
+            environmental_conditions=env_conditions,
+            temperature_conditions=temp_conditions,
+            ricochet_params=ricochet_params
+        )
+        
+        demo_text += f"""--- ADVANCED PHYSICS EFFECTS ---
+Enhanced penetration: {result['final_penetration']:.1f} mm RHA
+Enhanced velocity: {result['velocity_at_target']:.1f} m/s
+
+"""
+        
+        # Environmental effects
+        if result['advanced_effects']:
+            effects = result['advanced_effects']['ballistic_result'].environmental_effects
+            demo_text += f"""Environmental Effects:
+  Temperature: {effects['temperature_effect']*100:+.1f}%
+  Altitude: {effects['altitude_effect']*100:+.1f}%
+  Humidity: {effects['humidity_effect']*100:+.1f}%
+  Wind: {effects['wind_effect']*100:+.1f}%
+
+"""
+        
+        # Temperature effects
+        if result['temperature_analysis']:
+            temp = result['temperature_analysis']
+            demo_text += f"""Temperature Effects:
+  Velocity modifier: {temp['velocity_modifier']:.3f}
+  Penetration modifier: {temp['penetration_modifier']:.3f}
+  Propellant efficiency: {temp['propellant_efficiency']:.3f}
+
+"""
+        
+        # Ricochet analysis
+        if result['ricochet_analysis']:
+            ricochet = result['ricochet_analysis']
+            demo_text += f"""Ricochet Analysis:
+  Ricochet probability: {ricochet['ricochet_probability']*100:.1f}%
+  Predicted outcome: {ricochet['predicted_outcome'].upper()}
+  Critical angle: {ricochet['critical_angle']:.1f}°
+
+"""
+        
+        # Multi-hit simulation
+        demo_text += "--- MULTI-HIT DAMAGE SIMULATION ---\n"
+        
+        for hit in range(3):
+            impact_location = (random.uniform(-200, 200), random.uniform(-200, 200))
+            penetration_attempted = result['final_penetration']
+            energy = 0.5 * ammo.mass * result['velocity_at_target'] ** 2
+            current_thickness = armor.get_effective_thickness(ammo.penetration_type, angle)
+            penetration_achieved = penetration_attempted > current_thickness
+            
+            armor.apply_damage_from_impact(
+                ammo, impact_location, penetration_attempted,
+                energy, penetration_achieved, hit * 10.0
+            )
+            
+            damage_summary = armor.get_damage_summary()
+            condition = damage_summary['current_condition']
+            
+            demo_text += f"""\nHit {hit+1}:
+  Impact: ({impact_location[0]:.0f}, {impact_location[1]:.0f}) mm
+  Result: {'PENETRATION' if penetration_achieved else 'DEFEAT'}
+  Armor integrity: {condition['integrity_percent']:.1f}%
+  Thickness remaining: {condition['thickness_remaining']:.1f} mm
+  Status: {damage_summary['armor_status']}
+"""
+        
+        demo_text += "\n\n═══════════════════════════════════════════════════════════════\n"
+        demo_text += "ADVANCED PHYSICS DEMONSTRATION COMPLETE\n\n"
+        demo_text += "The system successfully modeled:\n"
+        demo_text += "• Complex environmental effects on ballistics\n"
+        demo_text += "• Temperature variations affecting performance\n"
+        demo_text += "• Ricochet probabilities and deflection analysis\n"
+        demo_text += "• Progressive armor damage from multiple hits\n\n"
+        demo_text += "This demonstrates the sophisticated physics engine that\n"
+        demo_text += "provides realistic simulation capabilities for educational\n"
+        demo_text += "and analytical purposes.\n"
+        demo_text += "═══════════════════════════════════════════════════════════════"
+        
+        return demo_text
     
     def run(self):
         """Start the GUI application."""

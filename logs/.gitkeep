@@ -1,0 +1,10 @@
+# This file ensures the logs directory is included in version control
+# while excluding its contents (log files) via .gitignore
+# 
+# The logs directory is used by the simulation logging system to store:
+# - Session data (session_*.json)
+# - Session summaries (session_summary_*.txt)  
+# - Main execution logs (simulation_main.log)
+# - Error logs (simulation_errors.log)
+# - Debug logs (debug_*.log)
+# - Advanced physics logs (advanced_physics_*.json)
