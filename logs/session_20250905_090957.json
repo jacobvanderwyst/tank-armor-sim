@@ -1,0 +1,110 @@
+{
+  "session_id": "20250905_090957",
+  "start_time": "2025-09-05T09:09:57.902144",
+  "simulations": [
+    {
+      "test_type": "penetration",
+      "timestamp": "2025-09-05T09:09:58.538010",
+      "inputs": {
+        "ammunition": "M829A4 APFSDS",
+        "armor": "RHA 100.0mm",
+        "angle": 0.0,
+        "distance": 1000.0
+      },
+      "results": {
+        "penetration": 694.0824970653637,
+        "effective_thickness": 100.0,
+        "outcome": "PROJECTILE_PENETRATES",
+        "advanced_physics": {
+          "base_penetration": 1210.135117338067,
+          "final_penetration": 694.0824970653637,
+          "velocity_at_target": 1224.601757863838,
+          "advanced_effects": {
+            "environmental_modifier": 1.0,
+            "ballistic_result": {
+              "_class": "AdvancedBallisticResult",
+              "velocity_at_target": 1224.601757863838,
+              "time_of_flight": 0.7010000000000005,
+              "energy_at_target": 3449193.7703353646,
+              "trajectory_angle": -0.2781070048778341,
+              "penetration_modifier": 1.0,
+              "ricochet_probability": 0.0,
+              "environmental_effects": {
+                "temperature_effect": 0.0,
+                "altitude_effect": 0.0,
+                "humidity_effect": 0.0,
+                "wind_effect": 0.0,
+                "air_density_ratio": 0.9980921775903026
+              }
+            }
+          },
+          "ricochet_analysis": {
+            "ricochet_probability": 0.09856000000000001,
+            "predicted_outcome": "penetration",
+            "deflection_angle": 0.0,
+            "critical_angle": 73.69954545454546
+          },
+          "temperature_analysis": {
+            "velocity_modifier": 1.0,
+            "penetration_modifier": 1.0,
+            "propellant_efficiency": 1.0686750042657422,
+            "accuracy_modifier": 1.0
+          }
+        }
+      }
+    },
+    {
+      "test_type": "penetration",
+      "timestamp": "2025-09-05T09:10:06.556009",
+      "inputs": {
+        "ammunition": "M829A4 APFSDS",
+        "armor": "RHA 100.0mm",
+        "angle": 0.0,
+        "distance": 1000.0
+      },
+      "results": {
+        "penetration": 694.0824970653637,
+        "effective_thickness": 100.0,
+        "outcome": "PROJECTILE_PENETRATES",
+        "advanced_physics": {
+          "base_penetration": 1210.135117338067,
+          "final_penetration": 694.0824970653637,
+          "velocity_at_target": 1224.601757863838,
+          "advanced_effects": {
+            "environmental_modifier": 1.0,
+            "ballistic_result": {
+              "_class": "AdvancedBallisticResult",
+              "velocity_at_target": 1224.601757863838,
+              "time_of_flight": 0.7010000000000005,
+              "energy_at_target": 3449193.7703353646,
+              "trajectory_angle": -0.2781070048778341,
+              "penetration_modifier": 1.0,
+              "ricochet_probability": 0.0,
+              "environmental_effects": {
+                "temperature_effect": 0.0,
+                "altitude_effect": 0.0,
+                "humidity_effect": 0.0,
+                "wind_effect": 0.0,
+                "air_density_ratio": 0.9980921775903026
+              }
+            }
+          },
+          "ricochet_analysis": {
+            "ricochet_probability": 0.09856000000000001,
+            "predicted_outcome": "penetration",
+            "deflection_angle": 0.0,
+            "critical_angle": 73.69954545454546
+          },
+          "temperature_analysis": {
+            "velocity_modifier": 1.0,
+            "penetration_modifier": 1.0,
+            "propellant_efficiency": 1.0686750042657422,
+            "accuracy_modifier": 1.0
+          }
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "performance_metrics": {}
+}

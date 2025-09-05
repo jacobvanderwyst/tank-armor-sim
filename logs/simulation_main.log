@@ -510,3 +510,266 @@
     }
   }
 }
+2025-09-05 08:52:25,873 - TankArmorSim - INFO - info:109 - Simulation logging session started: 20250905_085225
+2025-09-05 08:52:26,511 - TankArmorSim - INFO - info:109 - Penetration Test: M829A4 APFSDS vs RHA 100.0mm
+2025-09-05 08:52:26,511 - TankArmorSim - INFO - info:113 - Info data: {
+  "test_type": "penetration",
+  "timestamp": "2025-09-05T08:52:26.511251",
+  "inputs": {
+    "ammunition": "M829A4 APFSDS",
+    "armor": "RHA 100.0mm",
+    "angle": 0.0,
+    "distance": 1000.0
+  },
+  "results": {
+    "penetration": 694.0824970653637,
+    "effective_thickness": 100.0,
+    "outcome": "PROJECTILE_PENETRATES",
+    "advanced_physics": {
+      "base_penetration": 1210.135117338067,
+      "final_penetration": 694.0824970653637,
+      "velocity_at_target": 1224.601757863838,
+      "advanced_effects": {
+        "environmental_modifier": 1.0,
+        "ballistic_result": {
+          "_class": "AdvancedBallisticResult",
+          "velocity_at_target": 1224.601757863838,
+          "time_of_flight": 0.7010000000000005,
+          "energy_at_target": 3449193.7703353646,
+          "trajectory_angle": -0.2781070048778341,
+          "penetration_modifier": 1.0,
+          "ricochet_probability": 0.0,
+          "environmental_effects": {
+            "temperature_effect": 0.0,
+            "altitude_effect": 0.0,
+            "humidity_effect": 0.0,
+            "wind_effect": 0.0,
+            "air_density_ratio": 0.9980921775903026
+          }
+        }
+      },
+      "ricochet_analysis": {
+        "ricochet_probability": 0.09856000000000001,
+        "predicted_outcome": "penetration",
+        "deflection_angle": 0.0,
+        "critical_angle": 73.69954545454546
+      },
+      "temperature_analysis": {
+        "velocity_modifier": 1.0,
+        "penetration_modifier": 1.0,
+        "propellant_efficiency": 1.0686750042657422,
+        "accuracy_modifier": 1.0
+      }
+    }
+  }
+}
+2025-09-05 09:09:57,902 - TankArmorSim - INFO - info:109 - Simulation logging session started: 20250905_090957
+2025-09-05 09:09:58,538 - TankArmorSim - INFO - info:109 - Penetration Test: M829A4 APFSDS vs RHA 100.0mm
+2025-09-05 09:09:58,538 - TankArmorSim - INFO - info:113 - Info data: {
+  "test_type": "penetration",
+  "timestamp": "2025-09-05T09:09:58.538010",
+  "inputs": {
+    "ammunition": "M829A4 APFSDS",
+    "armor": "RHA 100.0mm",
+    "angle": 0.0,
+    "distance": 1000.0
+  },
+  "results": {
+    "penetration": 694.0824970653637,
+    "effective_thickness": 100.0,
+    "outcome": "PROJECTILE_PENETRATES",
+    "advanced_physics": {
+      "base_penetration": 1210.135117338067,
+      "final_penetration": 694.0824970653637,
+      "velocity_at_target": 1224.601757863838,
+      "advanced_effects": {
+        "environmental_modifier": 1.0,
+        "ballistic_result": {
+          "_class": "AdvancedBallisticResult",
+          "velocity_at_target": 1224.601757863838,
+          "time_of_flight": 0.7010000000000005,
+          "energy_at_target": 3449193.7703353646,
+          "trajectory_angle": -0.2781070048778341,
+          "penetration_modifier": 1.0,
+          "ricochet_probability": 0.0,
+          "environmental_effects": {
+            "temperature_effect": 0.0,
+            "altitude_effect": 0.0,
+            "humidity_effect": 0.0,
+            "wind_effect": 0.0,
+            "air_density_ratio": 0.9980921775903026
+          }
+        }
+      },
+      "ricochet_analysis": {
+        "ricochet_probability": 0.09856000000000001,
+        "predicted_outcome": "penetration",
+        "deflection_angle": 0.0,
+        "critical_angle": 73.69954545454546
+      },
+      "temperature_analysis": {
+        "velocity_modifier": 1.0,
+        "penetration_modifier": 1.0,
+        "propellant_efficiency": 1.0686750042657422,
+        "accuracy_modifier": 1.0
+      }
+    }
+  }
+}
+2025-09-05 09:10:06,556 - TankArmorSim - INFO - info:109 - Penetration Test: M829A4 APFSDS vs RHA 100.0mm
+2025-09-05 09:10:06,556 - TankArmorSim - INFO - info:113 - Info data: {
+  "test_type": "penetration",
+  "timestamp": "2025-09-05T09:10:06.556009",
+  "inputs": {
+    "ammunition": "M829A4 APFSDS",
+    "armor": "RHA 100.0mm",
+    "angle": 0.0,
+    "distance": 1000.0
+  },
+  "results": {
+    "penetration": 694.0824970653637,
+    "effective_thickness": 100.0,
+    "outcome": "PROJECTILE_PENETRATES",
+    "advanced_physics": {
+      "base_penetration": 1210.135117338067,
+      "final_penetration": 694.0824970653637,
+      "velocity_at_target": 1224.601757863838,
+      "advanced_effects": {
+        "environmental_modifier": 1.0,
+        "ballistic_result": {
+          "_class": "AdvancedBallisticResult",
+          "velocity_at_target": 1224.601757863838,
+          "time_of_flight": 0.7010000000000005,
+          "energy_at_target": 3449193.7703353646,
+          "trajectory_angle": -0.2781070048778341,
+          "penetration_modifier": 1.0,
+          "ricochet_probability": 0.0,
+          "environmental_effects": {
+            "temperature_effect": 0.0,
+            "altitude_effect": 0.0,
+            "humidity_effect": 0.0,
+            "wind_effect": 0.0,
+            "air_density_ratio": 0.9980921775903026
+          }
+        }
+      },
+      "ricochet_analysis": {
+        "ricochet_probability": 0.09856000000000001,
+        "predicted_outcome": "penetration",
+        "deflection_angle": 0.0,
+        "critical_angle": 73.69954545454546
+      },
+      "temperature_analysis": {
+        "velocity_modifier": 1.0,
+        "penetration_modifier": 1.0,
+        "propellant_efficiency": 1.0686750042657422,
+        "accuracy_modifier": 1.0
+      }
+    }
+  }
+}
+2025-09-05 10:49:22,225 - TankArmorSim - INFO - info:109 - Simulation logging session started: 20250905_104922
+2025-09-05 10:49:22,910 - TankArmorSim - INFO - info:109 - Penetration Test: M72 AP Shot vs M1A2 Frontal Armor
+2025-09-05 10:49:22,910 - TankArmorSim - INFO - info:113 - Info data: {
+  "test_type": "penetration",
+  "timestamp": "2025-09-05T10:49:22.910363",
+  "inputs": {
+    "ammunition": "M72 AP Shot",
+    "armor": "M1A2 Frontal Armor",
+    "angle": 20.0,
+    "distance": 1000.0
+  },
+  "results": {
+    "penetration": 2.2507004709609477,
+    "effective_thickness": 803.4542182193136,
+    "outcome": "ARMOR_DEFEATS",
+    "advanced_physics": {
+      "base_penetration": 2.61701317260377,
+      "final_penetration": 2.2507004709609477,
+      "velocity_at_target": 718.2119273963771,
+      "advanced_effects": {
+        "environmental_modifier": 1.0,
+        "ballistic_result": {
+          "_class": "AdvancedBallisticResult",
+          "velocity_at_target": 718.2119273963771,
+          "time_of_flight": 1.3269999999999647,
+          "energy_at_target": 1753816.467025024,
+          "trajectory_angle": -0.9895903484332854,
+          "penetration_modifier": 1.0,
+          "ricochet_probability": 0.0,
+          "environmental_effects": {
+            "temperature_effect": 0.0,
+            "altitude_effect": 0.0,
+            "humidity_effect": 0.0,
+            "wind_effect": 0.0,
+            "air_density_ratio": 0.9980921775903026
+          }
+        }
+      },
+      "ricochet_analysis": {
+        "ricochet_probability": 0.04117251613186069,
+        "predicted_outcome": "penetration",
+        "deflection_angle": 0.0,
+        "critical_angle": 62.753
+      },
+      "temperature_analysis": {
+        "velocity_modifier": 1.0,
+        "penetration_modifier": 1.0,
+        "propellant_efficiency": 1.0686750042657422,
+        "accuracy_modifier": 1.0
+      }
+    }
+  }
+}
+2025-09-05 10:53:26,565 - TankArmorSim - INFO - info:109 - Penetration Test: M829A4 APFSDS vs Challenger 2 Dorchester
+2025-09-05 10:53:26,565 - TankArmorSim - INFO - info:113 - Info data: {
+  "test_type": "penetration",
+  "timestamp": "2025-09-05T10:53:26.565622",
+  "inputs": {
+    "ammunition": "M829A4 APFSDS",
+    "armor": "Challenger 2 Dorchester",
+    "angle": 76.0,
+    "distance": 1000.0
+  },
+  "results": {
+    "penetration": 2072.0837645463216,
+    "effective_thickness": 3864.883737300231,
+    "outcome": "ARMOR_DEFEATS",
+    "advanced_physics": {
+      "base_penetration": 2460.3465051653898,
+      "final_penetration": 2072.0837645463216,
+      "velocity_at_target": 1224.601757863838,
+      "advanced_effects": {
+        "environmental_modifier": 1.0,
+        "ballistic_result": {
+          "_class": "AdvancedBallisticResult",
+          "velocity_at_target": 1224.601757863838,
+          "time_of_flight": 0.7010000000000005,
+          "energy_at_target": 3449193.7703353646,
+          "trajectory_angle": -0.2781070048778341,
+          "penetration_modifier": 1.0,
+          "ricochet_probability": 0.0,
+          "environmental_effects": {
+            "temperature_effect": 0.0,
+            "altitude_effect": 0.0,
+            "humidity_effect": 0.0,
+            "wind_effect": 0.0,
+            "air_density_ratio": 0.9980921775903026
+          }
+        }
+      },
+      "ricochet_analysis": {
+        "ricochet_probability": 0.34895918344406274,
+        "predicted_outcome": "penetration",
+        "deflection_angle": 30.756269382524636,
+        "critical_angle": 73.69954545454546
+      },
+      "temperature_analysis": {
+        "velocity_modifier": 1.0,
+        "penetration_modifier": 1.0,
+        "propellant_efficiency": 1.0686750042657422,
+        "accuracy_modifier": 1.0
+      }
+    }
+  }
+}
