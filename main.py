@@ -9,9 +9,9 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
-from ammunition import APFSDS, AP, APCR, HEAT, HESH
-from armor import RHA, CompositeArmor, ReactiveArmor, SpacedArmor
-from visualization import BallisticsVisualizer, PenetrationVisualizer, ComparisonVisualizer
+from src.ammunition import APFSDS, AP, APCR, HEAT, HESH
+from src.armor import RHA, CompositeArmor, ReactiveArmor, SpacedArmor
+from src.visualization import BallisticsVisualizer, PenetrationVisualizer, ComparisonVisualizer
 from typing import List, Dict, Any
 
 
@@ -318,19 +318,25 @@ class TankArmorSimulator:
             print("Invalid input!")
             return
         
-        # Select armor for target representation
-        print("\nSelect Target Armor:")
+        # Select armor for target representation (optional)
+        print("\nSelect Target Armor (optional):")
         armor_list = list(self.armor_catalog.keys())
+        print("0. None (trajectory only)")
         for i, armor_name in enumerate(armor_list, 1):
             armor = self.armor_catalog[armor_name]
             print(f"{i}. {armor_name} ({armor.armor_type.upper()}, {armor.thickness}mm)")
         
         try:
-            armor_choice = int(input(f"\nSelect target armor (1-{len(armor_list)}): ")) - 1
-            if armor_choice < 0 or armor_choice >= len(armor_list):
+            armor_choice = int(input(f"\nSelect target armor (0-{len(armor_list)}): "))
+            if armor_choice < 0 or armor_choice > len(armor_list):
                 print("Invalid selection!")
                 return
-            selected_armor = self.armor_catalog[armor_list[armor_choice]]
+            
+            if armor_choice == 0:
+                selected_armor = None
+                print("No target armor selected - showing trajectory only.")
+            else:
+                selected_armor = self.armor_catalog[armor_list[armor_choice - 1]]
         except ValueError:
             print("Invalid input!")
             return

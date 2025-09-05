@@ -39,8 +39,9 @@ class PenetrationVisualizer:
         velocity_at_impact = ammo.get_velocity_at_range(range_m)
         can_defeat = armor.can_defeat(penetration, ammo.penetration_type, impact_angle)
         
-        # Create multi-panel visualization
-        self.fig, self.axes = plt.subplots(2, 2, figsize=(16, 12))
+        # Create multi-panel visualization with better spacing
+        self.fig, self.axes = plt.subplots(2, 2, figsize=(18, 14))
+        self.fig.subplots_adjust(left=0.08, bottom=0.08, right=0.95, top=0.92, wspace=0.25, hspace=0.35)
         
         # Panel 1: Angle of Attack and Armor Geometry
         self._plot_angle_of_attack(ammo, armor, impact_angle, self.axes[0, 0])
@@ -58,7 +59,6 @@ class PenetrationVisualizer:
                                      effective_thickness, velocity_at_impact, 
                                      can_defeat, self.axes[1, 1])
         
-        plt.tight_layout()
         return self.fig
     
     def _plot_angle_of_attack(self, ammo, armor, impact_angle: float, ax):
@@ -102,10 +102,10 @@ class PenetrationVisualizer:
         ax.text(impact_x + 0.3, impact_y + 0.5, f'{impact_angle:.1f}°', 
                fontsize=12, color='blue', fontweight='bold')
         
-        # Add thickness annotations
+        # Add thickness annotations with better positioning
         effective_thickness = armor.get_effective_thickness(ammo.penetration_type, impact_angle)
-        ax.text(4, 0.5, f'Nominal: {armor.thickness:.0f}mm\\nEffective: {effective_thickness:.0f}mm RHA', 
-               fontsize=10, ha='center', bbox=dict(boxstyle='round', facecolor='yellow', alpha=0.7))
+        ax.text(4, 0.2, f'Nominal: {armor.thickness:.0f}mm\nEffective: {effective_thickness:.0f}mm RHA', 
+               fontsize=9, ha='center', bbox=dict(boxstyle='round', facecolor='yellow', alpha=0.7))
         
         ax.set_title('Angle of Attack & Armor Geometry')
         ax.set_xlabel('Distance (arbitrary units)')
@@ -140,14 +140,14 @@ class PenetrationVisualizer:
         ax.text(5, 0.5, result_text, fontsize=14, fontweight='bold', 
                color=result_color, ha='center')
         
-        # Add performance metrics
-        ax.text(0.5, 5.5, f'Penetration: {penetration:.0f}mm RHA', fontsize=10)
-        ax.text(0.5, 5.2, f'Effective Armor: {effective_thickness:.0f}mm RHA', fontsize=10)
-        ax.text(0.5, 4.9, f'Impact Velocity: {velocity:.0f} m/s', fontsize=10)
-        
+        # Add performance metrics with better spacing
+        metrics_text = f'Pen: {penetration:.0f}mm RHA\nArmor: {effective_thickness:.0f}mm RHA\nVel: {velocity:.0f} m/s'
         margin = abs(penetration - effective_thickness)
         margin_text = f'Overmatch: {margin:.0f}mm' if not can_defeat else f'Safety Margin: {margin:.0f}mm'
-        ax.text(0.5, 4.6, margin_text, fontsize=10, fontweight='bold')
+        full_metrics = f'{metrics_text}\n{margin_text}'
+        
+        ax.text(0.5, 5.7, full_metrics, fontsize=9, va='top',
+               bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.8))
         
         ax.set_title(f'{ammo.penetration_type.title()} Penetration Mechanism')
         ax.set_xlabel('Armor Cross-Section')
@@ -165,7 +165,7 @@ class PenetrationVisualizer:
             # Show sabot discard
             ax.plot([0.5, 0.8], [2.7, 2.5], 'gray', linewidth=4, alpha=0.6)
             ax.plot([0.5, 0.8], [3.3, 3.5], 'gray', linewidth=4, alpha=0.6)
-            ax.text(0.6, 2.2, 'Sabot\\nDiscard', fontsize=8, ha='center')
+            ax.text(0.6, 2.0, 'Sabot\nDiscard', fontsize=8, ha='center')
         else:
             # AP/APCR - solid shot
             penetrator_x = [1.5, 3 + (0 if can_defeat else 1.5)]
@@ -187,7 +187,7 @@ class PenetrationVisualizer:
         # Draw warhead
         warhead = patches.Circle((1.5, 3), 0.4, color='orange', alpha=0.8)
         ax.add_patch(warhead)
-        ax.text(1.5, 3, 'HEAT\\nWarhead', fontsize=8, ha='center', va='center')
+        ax.text(1.5, 3, 'HEAT\nWarhead', fontsize=8, ha='center', va='center')
         
         # Draw shaped charge jet
         if not can_defeat:
@@ -219,7 +219,7 @@ class PenetrationVisualizer:
         # Show plastic explosive spread
         explosive_patch = patches.Wedge((3, 3), 0.5, -30, 30, color='red', alpha=0.6)
         ax.add_patch(explosive_patch)
-        ax.text(3.5, 3.5, 'Plastic\\nExplosive', fontsize=8, ha='center')
+        ax.text(3.5, 3.3, 'Plastic\nExplosive', fontsize=8, ha='center')
         
         if not can_defeat:
             # Show spall cone
@@ -300,8 +300,8 @@ class PenetrationVisualizer:
                 ax.text(x, y-0.6, 'DAMAGED', fontsize=6, ha='center', color='red')
         else:
             # No penetration
-            ax.text(5, 3, 'ARMOR HOLDS\\nNO BEHIND-ARMOR EFFECTS', 
-                   fontsize=14, fontweight='bold', ha='center', va='center',
+            ax.text(5, 3, 'ARMOR HOLDS\nNO BEHIND-ARMOR EFFECTS', 
+                   fontsize=12, fontweight='bold', ha='center', va='center',
                    bbox=dict(boxstyle='round', facecolor='lightgreen', alpha=0.8))
         
         ax.set_title('Behind-Armor Effects')
@@ -315,55 +315,47 @@ class PenetrationVisualizer:
         ax.axis('off')
         
         # Title
-        ax.text(0.5, 0.95, 'PENETRATION TEST SUMMARY', fontsize=16, fontweight='bold',
+        ax.text(0.5, 0.96, 'PENETRATION TEST SUMMARY', fontsize=14, fontweight='bold',
                ha='center', transform=ax.transAxes)
         
-        # Test parameters
-        params_text = f"""
-AMMUNITION: {ammo.name}
-  Type: {ammo.penetration_type.upper()}
-  Caliber: {ammo.caliber:.0f}mm
-  Muzzle Velocity: {ammo.muzzle_velocity:.0f} m/s
-  Mass: {ammo.mass:.1f} kg
+        # Create a more compact layout with two columns
+        # Left column - Test parameters
+        left_text = f"""AMMUNITION: {ammo.name[:20]}...
+Type: {ammo.penetration_type.upper()}
+Caliber: {ammo.caliber:.0f}mm
+Velocity: {ammo.muzzle_velocity:.0f} m/s
+Mass: {ammo.mass:.1f} kg
 
-ARMOR: {armor.name}
-  Type: {armor.armor_type.upper()}
-  Thickness: {armor.thickness:.0f}mm
-  Density: {armor.density:.0f} kg/m³
-
-ENGAGEMENT:
-  Range: {range_m:.0f} m
-  Impact Angle: {impact_angle:.1f}°
-  Impact Velocity: {velocity:.0f} m/s
-"""
+ARMOR: {armor.name[:20]}...
+Type: {armor.armor_type.upper()}
+Thickness: {armor.thickness:.0f}mm
+Density: {armor.density:.0f} kg/m³"""
         
-        ax.text(0.05, 0.85, params_text, fontsize=10, ha='left', va='top',
+        ax.text(0.05, 0.88, left_text, fontsize=9, ha='left', va='top',
                transform=ax.transAxes, family='monospace')
         
-        # Results
+        # Right column - Engagement data
+        right_text = f"""ENGAGEMENT:
+Range: {range_m:.0f} m
+Angle: {impact_angle:.1f}°
+Impact Vel: {velocity:.0f} m/s
+
+RESULTS:
+Penetration: {penetration:.1f} mm
+Armor Effect: {effective_thickness:.1f} mm
+Margin: {abs(penetration - effective_thickness):.1f} mm
+Protection: {effective_thickness/armor.thickness:.2f}x"""
+        
+        ax.text(0.55, 0.88, right_text, fontsize=9, ha='left', va='top',
+               transform=ax.transAxes, family='monospace')
+        
+        # Main result in center
         result_color = 'green' if can_defeat else 'red'
         result_text = 'ARMOR DEFEATS PROJECTILE' if can_defeat else 'PROJECTILE PENETRATES ARMOR'
         
-        ax.text(0.5, 0.35, result_text, fontsize=14, fontweight='bold',
-               ha='center', color=result_color, transform=ax.transAxes,
+        ax.text(0.5, 0.15, result_text, fontsize=12, fontweight='bold',
+               ha='center', va='center', color=result_color, transform=ax.transAxes,
                bbox=dict(boxstyle='round', facecolor='white', edgecolor=result_color, linewidth=2))
-        
-        # Performance metrics
-        margin = abs(penetration - effective_thickness)
-        margin_type = 'Safety Margin' if can_defeat else 'Overmatch'
-        
-        metrics_text = f"""
-PENETRATION ANALYSIS:
-  Penetration Capability: {penetration:.1f} mm RHA
-  Effective Armor Thickness: {effective_thickness:.1f} mm RHA
-  {margin_type}: {margin:.1f} mm RHA
-  
-PROTECTION FACTOR: {effective_thickness/armor.thickness:.2f}x
-(vs {ammo.penetration_type} ammunition)
-"""
-        
-        ax.text(0.05, 0.25, metrics_text, fontsize=10, ha='left', va='top',
-               transform=ax.transAxes, family='monospace')
     
     def _get_armor_color(self, armor) -> str:
         """Get color for armor type visualization."""
@@ -391,6 +383,22 @@ PROTECTION FACTOR: {effective_thickness/armor.thickness:.2f}x
             print(f"Penetration analysis plot saved as {filepath}")
     
     def show_plot(self):
-        """Display the plot."""
+        """Display the plot in fullscreen for better readability."""
         if self.fig:
+            # Maximize the matplotlib window for better visibility
+            mngr = plt.get_current_fig_manager()
+            try:
+                # Try different methods depending on backend
+                if hasattr(mngr, 'window'):
+                    if hasattr(mngr.window, 'state'):  # Tkinter backend
+                        mngr.window.state('zoomed')  # Windows maximize
+                    elif hasattr(mngr.window, 'showMaximized'):  # Qt backend
+                        mngr.window.showMaximized()
+                elif hasattr(mngr, 'frame'):
+                    mngr.frame.Maximize(True)  # wx backend
+                elif hasattr(mngr, 'full_screen_toggle'):
+                    mngr.full_screen_toggle()  # Some backends
+            except:
+                pass  # Fallback gracefully if maximization fails
+            
             plt.show()

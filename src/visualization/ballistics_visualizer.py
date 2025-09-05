@@ -75,18 +75,18 @@ class BallisticsVisualizer:
         # Calculate trajectory
         x_traj, y_traj, v_traj = self.calculate_trajectory(ammo, range_m)
         
-        # Create figure with subplots
+        # Create figure with subplots and better spacing
         if show_velocity:
-            self.fig, (self.ax, ax_vel) = plt.subplots(2, 1, figsize=(12, 10))
+            self.fig, (self.ax, ax_vel) = plt.subplots(2, 1, figsize=(14, 12))
+            self.fig.subplots_adjust(left=0.08, bottom=0.08, right=0.95, top=0.92, hspace=0.3)
         else:
-            self.fig, self.ax = plt.subplots(1, 1, figsize=(12, 6))
+            self.fig, self.ax = plt.subplots(1, 1, figsize=(14, 8))
+            self.fig.subplots_adjust(left=0.08, bottom=0.1, right=0.95, top=0.9)
         
         self._plot_trajectory(ammo, armor, x_traj, y_traj, range_m, impact_angle)
         
         if show_velocity:
             self._plot_velocity_decay(x_traj, v_traj, ammo.muzzle_velocity, ax_vel)
-        
-        plt.tight_layout()
         return self.fig
     
     def _plot_trajectory(self, ammo, armor, x_traj: np.ndarray, y_traj: np.ndarray,
@@ -103,8 +103,9 @@ class BallisticsVisualizer:
         impact_y = np.interp(range_m, x_traj, y_traj)
         self.ax.plot(impact_x, impact_y, 'ro', markersize=10, label='Impact Point')
         
-        # Draw armor representation at target
-        self._draw_armor_target(impact_x, impact_y, armor, impact_angle)
+        # Draw armor representation at target (if armor is provided)
+        if armor:
+            self._draw_armor_target(impact_x, impact_y, armor, impact_angle)
         
         # Draw projectile at various points along trajectory
         self._draw_projectile_instances(x_traj, y_traj, ammo)
@@ -115,7 +116,11 @@ class BallisticsVisualizer:
         # Formatting
         self.ax.set_xlabel('Range (meters)')
         self.ax.set_ylabel('Height (meters)')
-        self.ax.set_title(f'{ammo.name} vs {armor.name} - Ballistic Trajectory')
+        
+        # Handle case where armor is None
+        armor_name = armor.name if armor else "No Target"
+        self.ax.set_title(f'{ammo.name} vs {armor_name} - Ballistic Trajectory')
+        
         self.ax.grid(True, alpha=0.3)
         self.ax.legend()
         self.ax.axis('equal')
@@ -126,6 +131,9 @@ class BallisticsVisualizer:
         
     def _draw_armor_target(self, x: float, y: float, armor, impact_angle: float):
         """Draw armor target representation at impact point."""
+        if armor is None:
+            return
+            
         armor_length = 100  # Visual length in meters
         armor_thickness_scale = armor.thickness / 10  # Scale for visualization
         
@@ -238,6 +246,22 @@ class BallisticsVisualizer:
             print(f"Trajectory plot saved as {filepath}")
     
     def show_plot(self):
-        """Display the plot."""
+        """Display the plot in fullscreen for better readability."""
         if self.fig:
+            # Maximize the matplotlib window for better visibility
+            mngr = plt.get_current_fig_manager()
+            try:
+                # Try different methods depending on backend
+                if hasattr(mngr, 'window'):
+                    if hasattr(mngr.window, 'state'):  # Tkinter backend
+                        mngr.window.state('zoomed')  # Windows maximize
+                    elif hasattr(mngr.window, 'showMaximized'):  # Qt backend
+                        mngr.window.showMaximized()
+                elif hasattr(mngr, 'frame'):
+                    mngr.frame.Maximize(True)  # wx backend
+                elif hasattr(mngr, 'full_screen_toggle'):
+                    mngr.full_screen_toggle()  # Some backends
+            except:
+                pass  # Fallback gracefully if maximization fails
+            
             plt.show()

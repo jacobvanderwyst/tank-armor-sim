@@ -51,14 +51,17 @@ This project simulates the complex physics of armor penetration, taking into acc
 ```
 tank-armor-sim/
 ├── src/
-│   ├── ammunition/     # Ammunition type definitions
-│   ├── armor/         # Armor system implementations
-│   ├── physics/       # Penetration calculation engine
-│   └── game/          # Game logic and UI
-├── config/           # Configuration files for ammo/armor data
-├── tests/           # Unit tests
-├── docs/            # Documentation
-└── main.py          # Main entry point
+│   ├── ammunition/        # Ammunition type definitions
+│   ├── armor/            # Armor system implementations
+│   ├── physics/          # Penetration calculation engine
+│   └── visualization/    # Matplotlib-based visualization system
+├── config/               # Configuration files for ammo/armor data
+├── results/              # Generated visualization outputs
+├── example_results_imgs/ # Example output images
+├── gui_main.py          # GUI application entry point
+├── gui_dialogs.py       # GUI dialog classes
+├── launcher.py          # Universal launcher (GUI/CLI selector)
+└── main.py              # CLI application entry point
 ```
 
 ## Usage
@@ -105,12 +108,44 @@ This is an educational project created for learning purposes and testing WARP (w
 - Interactive CLI development
 - Historical data integration and validation
 
+## Known Issues and Limitations
+
+### Display and Visualization
+- **Unicode Symbol Support**: Some systems may show warnings for missing Unicode symbols (✅❌) in visualizations. This is a font limitation and doesn't affect functionality.
+- **Font Rendering**: Default matplotlib fonts may not display all Unicode characters. Consider installing additional font packages if symbols appear as boxes.
+
+### System Compatibility  
+- **Window Maximization**: Auto-maximization feature works best on Windows. Linux and macOS may have varying behavior.
+- **High DPI Displays**: Visualization text and elements may appear small on high-resolution displays. This is a matplotlib limitation.
+
+### Physics Model Limitations
+- **Simplified Ballistics**: The trajectory model uses simplified drag calculations. Real-world ballistics involve more complex atmospheric effects.
+- **Temperature Effects**: Current model doesn't account for ambient temperature effects on propellant performance.
+- **Multiple Hit Scenarios**: The simulator models single-hit engagements only.
+
+### Data and Accuracy
+- **Historical Accuracy**: While based on publicly available data, some specifications are estimates or derived from incomplete sources.
+- **Classification Limitations**: Some modern armor and ammunition specifications remain classified and are approximated.
+- **Regional Variations**: Manufacturing tolerances and regional production differences are not modeled.
+
+### Performance Notes
+- **Visualization Generation**: Complex visualizations may take several seconds to generate on slower systems.
+- **Memory Usage**: Running multiple comparisons with visualizations may increase memory usage.
+
+### Reporting Issues
+If you encounter bugs or have suggestions for improvements, please document:
+1. Operating System and Python version
+2. Steps to reproduce the issue
+3. Expected vs. actual behavior
+4. Any error messages or warnings
+
 ## Contributing
 
 This project aims for historical accuracy and realistic physics modeling. Contributions should include:
 - Proper documentation of sources for ballistic data
 - Unit tests for new features
 - Realistic parameter values based on historical data
+- Compatibility testing across different operating systems
 
 ## Disclaimer
 

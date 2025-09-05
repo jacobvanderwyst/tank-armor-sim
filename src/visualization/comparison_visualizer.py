@@ -41,8 +41,9 @@ class ComparisonVisualizer:
         if angles is None:
             angles = [0, 15, 30, 45, 60]
             
-        # Create 2x2 subplot layout
-        self.fig, self.axes = plt.subplots(2, 2, figsize=(16, 12))
+        # Create 2x2 subplot layout with better spacing
+        self.fig, self.axes = plt.subplots(2, 2, figsize=(18, 14))
+        self.fig.subplots_adjust(left=0.08, bottom=0.1, right=0.95, top=0.90, wspace=0.3, hspace=0.4)
         
         # Panel 1: Range vs Penetration curves
         self._plot_range_penetration_curves(ammunition_list, armor, ranges, self.axes[0, 0])
@@ -56,8 +57,7 @@ class ComparisonVisualizer:
         # Panel 4: Summary statistics table
         self._plot_ammunition_summary(ammunition_list, armor, ranges[2], angles[1], self.axes[1, 1])
         
-        plt.tight_layout()
-        self.fig.suptitle(f'Ammunition Comparison vs {armor.name}', fontsize=16, y=0.98)
+        self.fig.suptitle(f'Ammunition Comparison vs {armor.name}', fontsize=16, y=0.95)
         return self.fig
     
     def compare_armor(self, armor_list: List[Any], ammunition,
@@ -79,8 +79,9 @@ class ComparisonVisualizer:
         if angles is None:
             angles = [0, 15, 30, 45, 60]
             
-        # Create 2x2 subplot layout
-        self.fig, self.axes = plt.subplots(2, 2, figsize=(16, 12))
+        # Create 2x2 subplot layout with better spacing
+        self.fig, self.axes = plt.subplots(2, 2, figsize=(18, 14))
+        self.fig.subplots_adjust(left=0.08, bottom=0.1, right=0.95, top=0.90, wspace=0.3, hspace=0.4)
         
         # Panel 1: Armor effectiveness vs range
         self._plot_armor_effectiveness_vs_range(armor_list, ammunition, ranges, self.axes[0, 0])
@@ -94,8 +95,7 @@ class ComparisonVisualizer:
         # Panel 4: Armor summary statistics
         self._plot_armor_summary(armor_list, ammunition, ranges[2], angles[1], self.axes[1, 1])
         
-        plt.tight_layout()
-        self.fig.suptitle(f'Armor Comparison vs {ammunition.name}', fontsize=16, y=0.98)
+        self.fig.suptitle(f'Armor Comparison vs {ammunition.name}', fontsize=16, y=0.95)
         return self.fig
     
     def _plot_range_penetration_curves(self, ammunition_list: List[Any], armor, 
@@ -371,6 +371,22 @@ class ComparisonVisualizer:
             print(f"Comparison analysis plot saved as {filepath}")
     
     def show_plot(self):
-        """Display the plot."""
+        """Display the plot in fullscreen for better readability."""
         if self.fig:
+            # Maximize the matplotlib window for better visibility
+            mngr = plt.get_current_fig_manager()
+            try:
+                # Try different methods depending on backend
+                if hasattr(mngr, 'window'):
+                    if hasattr(mngr.window, 'state'):  # Tkinter backend
+                        mngr.window.state('zoomed')  # Windows maximize
+                    elif hasattr(mngr.window, 'showMaximized'):  # Qt backend
+                        mngr.window.showMaximized()
+                elif hasattr(mngr, 'frame'):
+                    mngr.frame.Maximize(True)  # wx backend
+                elif hasattr(mngr, 'full_screen_toggle'):
+                    mngr.full_screen_toggle()  # Some backends
+            except:
+                pass  # Fallback gracefully if maximization fails
+            
             plt.show()
