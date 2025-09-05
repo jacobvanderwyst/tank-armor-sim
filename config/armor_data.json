@@ -1,0 +1,126 @@
+{
+  "rha_standards": {
+    "100mm_rha": {
+      "name": "100mm RHA",
+      "thickness_mm": 100,
+      "material": "Rolled Homogeneous Armor",
+      "hardness_bhn": 300,
+      "notes": "Standard reference armor"
+    },
+    "200mm_rha": {
+      "name": "200mm RHA",
+      "thickness_mm": 200,
+      "material": "Rolled Homogeneous Armor", 
+      "hardness_bhn": 300,
+      "notes": "Heavy RHA protection"
+    }
+  },
+  "modern_mbt_armor": {
+    "m1a2_frontal": {
+      "name": "M1A2 Abrams Frontal",
+      "country": "USA",
+      "total_thickness_mm": 650,
+      "steel_layers_mm": 200,
+      "ceramic_layers_mm": 350,
+      "other_layers_mm": 100,
+      "armor_type": "composite",
+      "estimated_protection": {
+        "vs_apfsds_mm_rha": 600,
+        "vs_heat_mm_rha": 1300
+      },
+      "notes": "DU mesh reinforced composite armor"
+    },
+    "challenger2_frontal": {
+      "name": "Challenger 2 Dorchester",
+      "country": "UK",
+      "total_thickness_mm": 800,
+      "steel_layers_mm": 250,
+      "ceramic_layers_mm": 450,
+      "other_layers_mm": 100,
+      "armor_type": "composite",
+      "estimated_protection": {
+        "vs_apfsds_mm_rha": 650,
+        "vs_heat_mm_rha": 1400
+      },
+      "notes": "Second-generation Chobham armor"
+    },
+    "leopard2a7_frontal": {
+      "name": "Leopard 2A7 Frontal",
+      "country": "Germany",
+      "total_thickness_mm": 700,
+      "steel_layers_mm": 220,
+      "ceramic_layers_mm": 380,
+      "other_layers_mm": 100,
+      "armor_type": "composite",
+      "estimated_protection": {
+        "vs_apfsds_mm_rha": 580,
+        "vs_heat_mm_rha": 1200
+      },
+      "notes": "Modern German composite armor"
+    },
+    "t90m_frontal": {
+      "name": "T-90M with Relikt ERA",
+      "country": "Russia",
+      "base_armor_mm": 500,
+      "era_thickness_mm": 45,
+      "era_type": "Relikt",
+      "explosive_mass_per_tile_kg": 0.8,
+      "armor_type": "reactive",
+      "estimated_protection": {
+        "vs_apfsds_mm_rha": 650,
+        "vs_heat_mm_rha": 1350
+      },
+      "notes": "4S23 Relikt third-generation ERA"
+    }
+  },
+  "spaced_armor_examples": {
+    "leopard2_side": {
+      "name": "Leopard 2A7 Side Armor",
+      "country": "Germany",
+      "front_plate_mm": 35,
+      "rear_plate_mm": 70,
+      "spacing_mm": 150,
+      "armor_type": "spaced",
+      "estimated_protection": {
+        "vs_heat_mm_rha": 400,
+        "vs_hesh_mm_rha": 250
+      },
+      "notes": "Spaced side armor with AMAP modules"
+    }
+  },
+  "historical_armor": {
+    "tiger1_frontal": {
+      "name": "Tiger I Frontal Armor",
+      "country": "Germany",
+      "thickness_mm": 102,
+      "material": "Homogeneous Steel",
+      "armor_type": "steel",
+      "slope_degrees": 8,
+      "hardness_bhn": 265,
+      "year": 1942,
+      "notes": "Face-hardened steel armor"
+    },
+    "sherman_frontal": {
+      "name": "M4 Sherman Frontal",
+      "country": "USA",
+      "thickness_mm": 76,
+      "material": "Rolled Homogeneous Armor",
+      "armor_type": "steel",
+      "slope_degrees": 56,
+      "hardness_bhn": 300,
+      "year": 1942,
+      "notes": "Sloped RHA armor"
+    },
+    "t34_frontal": {
+      "name": "T-34 Model 1943 Frontal",
+      "country": "USSR",
+      "thickness_mm": 90,
+      "material": "Rolled Homogeneous Armor",
+      "armor_type": "steel", 
+      "slope_degrees": 60,
+      "hardness_bhn": 320,
+      "year": 1943,
+      "notes": "Well-sloped RHA armor"
+    }
+  }
+}

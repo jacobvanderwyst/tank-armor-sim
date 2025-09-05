@@ -1,0 +1,94 @@
+{
+  "apfsds_rounds": {
+    "M829A4": {
+      "name": "M829A4 APFSDS",
+      "country": "USA",
+      "caliber_mm": 120,
+      "penetrator_diameter_mm": 22,
+      "penetrator_length_mm": 570,
+      "penetrator_mass_kg": 4.6,
+      "muzzle_velocity_ms": 1680,
+      "introduction_year": 2016,
+      "notes": "Latest US 120mm APFSDS with depleted uranium penetrator"
+    },
+    "3BM60": {
+      "name": "3BM60 Svinets-2",
+      "country": "Russia",
+      "caliber_mm": 125,
+      "penetrator_diameter_mm": 24,
+      "penetrator_length_mm": 600,
+      "penetrator_mass_kg": 5.2,
+      "muzzle_velocity_ms": 1750,
+      "introduction_year": 2011,
+      "notes": "Russian tungsten APFSDS for 2A46M gun"
+    },
+    "DM53": {
+      "name": "DM53 APFSDS",
+      "country": "Germany",
+      "caliber_mm": 120,
+      "penetrator_diameter_mm": 22,
+      "penetrator_length_mm": 560,
+      "penetrator_mass_kg": 4.3,
+      "muzzle_velocity_ms": 1650,
+      "introduction_year": 2000,
+      "notes": "German tungsten APFSDS, NATO standard"
+    }
+  },
+  "heat_rounds": {
+    "M830A1": {
+      "name": "M830A1 HEAT-MP",
+      "country": "USA",
+      "caliber_mm": 120,
+      "warhead_diameter_mm": 120,
+      "warhead_mass_kg": 18.6,
+      "explosive_mass_kg": 2.4,
+      "muzzle_velocity_ms": 1410,
+      "standoff_distance_mm": 150,
+      "penetration_estimate_mm": 700,
+      "notes": "Multi-Purpose round with programmable fuse"
+    },
+    "3BK29": {
+      "name": "3BK29 HEAT",
+      "country": "Russia", 
+      "caliber_mm": 125,
+      "warhead_diameter_mm": 125,
+      "warhead_mass_kg": 19.8,
+      "explosive_mass_kg": 2.8,
+      "muzzle_velocity_ms": 905,
+      "standoff_distance_mm": 180,
+      "penetration_estimate_mm": 750,
+      "notes": "Standard Russian 125mm HEAT round"
+    }
+  },
+  "hesh_rounds": {
+    "L31A7": {
+      "name": "L31A7 HESH",
+      "country": "UK",
+      "caliber_mm": 120,
+      "shell_mass_kg": 17.2,
+      "explosive_mass_kg": 4.1,
+      "muzzle_velocity_ms": 670,
+      "notes": "British 120mm High Explosive Squash Head"
+    }
+  },
+  "historical_ap": {
+    "M72": {
+      "name": "M72 AP Shot",
+      "country": "USA",
+      "caliber_mm": 76,
+      "mass_kg": 6.8,
+      "muzzle_velocity_ms": 792,
+      "introduction_year": 1943,
+      "notes": "WWII-era 76mm AP shot for Sherman tanks"
+    },
+    "PzGr_39": {
+      "name": "PzGr 39",
+      "country": "Germany",
+      "caliber_mm": 88,
+      "mass_kg": 10.2,
+      "muzzle_velocity_ms": 773,
+      "introduction_year": 1940,
+      "notes": "German 88mm AP for Tiger I tank"
+    }
+  }
+}
