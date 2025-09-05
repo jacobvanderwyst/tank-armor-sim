@@ -379,8 +379,16 @@ PROTECTION FACTOR: {effective_thickness/armor.thickness:.2f}x
     def save_plot(self, filename: str = 'penetration_analysis.png'):
         """Save the current plot to file."""
         if self.fig:
-            self.fig.savefig(filename, dpi=300, bbox_inches='tight')
-            print(f"Penetration analysis plot saved as {filename}")
+            # Ensure results directory exists
+            import os
+            results_dir = 'results'
+            if not os.path.exists(results_dir):
+                os.makedirs(results_dir)
+            
+            # Save to results directory
+            filepath = os.path.join(results_dir, filename)
+            self.fig.savefig(filepath, dpi=300, bbox_inches='tight')
+            print(f"Penetration analysis plot saved as {filepath}")
     
     def show_plot(self):
         """Display the plot."""

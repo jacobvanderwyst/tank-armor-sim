@@ -87,6 +87,12 @@ tank-armor-sim/
 ├── config/                 # Historical data (JSON format)
 │   ├── ammunition_data.json # Real-world ammunition specifications
 │   └── armor_data.json     # Real-world armor configurations
+├── results/                # Generated visualization output files
+│   └── README.md           # Documentation for results directory
+├── example_results_imgs/   # Example visualization outputs
+│   ├── README.md           # Documentation for example images
+│   ├── penetration_L31A7_HESH_RHA_200.0mm.png # HESH vs RHA example
+│   └── trajectory_M829A4_APFSDS_100.0m.png    # APFSDS trajectory example
 ├── main.py                 # CLI entry point and TankArmorSimulator class
 ├── test_visualization.py   # Visualization system test script
 └── requirements.txt        # matplotlib>=3.5.0, numpy>=1.20.0
@@ -226,10 +232,11 @@ Each entry includes technical specifications, introduction year, country, and no
   - **Spalling**: Shock wave propagation, spall cones, fragment patterns
 
 **Visualization Output**:
-- Automatically saved as high-resolution PNG files
+- Automatically saved as high-resolution PNG files in `results/` directory
 - Filename format: `penetration_[ammo]_[armor].png`, `trajectory_[ammo]_[range]m.png`
 - Color-coded by armor type: RHA (gray), Composite (brown), Reactive (orange), Spaced (blue)
 - Professional technical diagrams suitable for analysis and documentation
+- Example outputs available in `example_results_imgs/` with detailed documentation
 
 ## Common Development Tasks
 

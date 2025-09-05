@@ -47,10 +47,10 @@ try:
     penetration_viz2.save_plot('test_heat_penetration.png')
     print("✓ HEAT penetration visualization created")
     
-    print("\nAll visualization tests passed! Check the generated PNG files:")
-    print("- test_trajectory.png")
-    print("- test_penetration.png") 
-    print("- test_heat_penetration.png")
+    print("\nAll visualization tests passed! Check the generated PNG files in results/:")
+    print("- results/test_trajectory.png")
+    print("- results/test_penetration.png") 
+    print("- results/test_heat_penetration.png")
     
 except ImportError as e:
     print(f"Import error: {e}")
