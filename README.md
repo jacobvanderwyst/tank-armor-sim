@@ -69,6 +69,14 @@ The simulator will prompt you to:
 3. Set engagement parameters (range, angle, etc.)
 4. View penetration results and analysis
 
+## About This Project
+
+This is an educational project created for learning purposes and testing WARP (warp.dev) AI development capabilities. The project demonstrates:
+- Object-oriented design with inheritance hierarchies
+- Physics simulation and mathematical modeling
+- Interactive CLI development
+- Historical data integration and validation
+
 ## Contributing
 
 This project aims for historical accuracy and realistic physics modeling. Contributions should include:
@@ -76,10 +84,6 @@ This project aims for historical accuracy and realistic physics modeling. Contri
 - Unit tests for new features
 - Realistic parameter values based on historical data
 
-## License
-
-MIT License - See LICENSE file for details
-
 ## Disclaimer
 
-This simulator is for educational and entertainment purposes only. It is based on publicly available historical data and should not be used for any military or defense applications.
+This simulator is for educational and entertainment purposes only. It is based on publicly available historical data and should not be used for any military or defense applications. This project is a personal learning exercise and is not licensed for commercial or production use.
