@@ -22,6 +22,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
 from src.ammunition import APFSDS, AP, APCR, HEAT, HESH
 from src.armor import RHA, CompositeArmor, ReactiveArmor, SpacedArmor
+from src.visualization import BallisticsVisualizer, PenetrationVisualizer, ComparisonVisualizer
 from logging_system import get_logger
 from typing import Dict, Any, Optional, List
 from gui_dialogs import PenetrationTestDialog, TrajectoryDialog, ComparisonDialog
