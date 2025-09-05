@@ -97,25 +97,45 @@ class SimulationLogger:
         """Log debug message with optional structured data."""
         self.logger.debug(message)
         if extra_data:
-            self.logger.debug(f"Debug data: {json.dumps(extra_data, indent=2)}")
+            try:
+                clean_data = self._clean_for_json(extra_data)
+                self.logger.debug(f"Debug data: {json.dumps(clean_data, indent=2)}")
+            except Exception as e:
+                self.logger.debug(f"Debug data (serialization error): {str(extra_data)}")
+                self.logger.warning(f"Failed to serialize debug data to JSON: {e}")
     
     def info(self, message: str, extra_data: Optional[Dict] = None):
         """Log info message with optional structured data."""
         self.logger.info(message)
         if extra_data:
-            self.logger.info(f"Info data: {json.dumps(extra_data, indent=2)}")
+            try:
+                clean_data = self._clean_for_json(extra_data)
+                self.logger.info(f"Info data: {json.dumps(clean_data, indent=2)}")
+            except Exception as e:
+                self.logger.info(f"Info data (serialization error): {str(extra_data)}")
+                self.logger.warning(f"Failed to serialize info data to JSON: {e}")
     
     def warning(self, message: str, extra_data: Optional[Dict] = None):
         """Log warning message with optional structured data."""
         self.logger.warning(message)
         if extra_data:
-            self.logger.warning(f"Warning data: {json.dumps(extra_data, indent=2)}")
+            try:
+                clean_data = self._clean_for_json(extra_data)
+                self.logger.warning(f"Warning data: {json.dumps(clean_data, indent=2)}")
+            except Exception as e:
+                self.logger.warning(f"Warning data (serialization error): {str(extra_data)}")
+                self.logger.warning(f"Failed to serialize warning data to JSON: {e}")
     
     def error(self, message: str, extra_data: Optional[Dict] = None, exception: Optional[Exception] = None):
         """Log error message with optional structured data and exception details."""
         self.logger.error(message)
         if extra_data:
-            self.logger.error(f"Error data: {json.dumps(extra_data, indent=2)}")
+            try:
+                clean_data = self._clean_for_json(extra_data)
+                self.logger.error(f"Error data: {json.dumps(clean_data, indent=2)}")
+            except Exception as e:
+                self.logger.error(f"Error data (serialization error): {str(extra_data)}")
+                self.logger.warning(f"Failed to serialize error data to JSON: {e}")
         if exception:
             self.logger.error(f"Exception: {str(exception)}")
             self.logger.error(f"Traceback: {traceback.format_exc()}")
@@ -129,20 +149,40 @@ class SimulationLogger:
         }
         self.session_data["errors"].append(error_entry)
     
-    def _clean_for_json(self, obj):
+    def _clean_for_json(self, obj, max_depth=10, current_depth=0):
         """Recursively clean objects for JSON serialization."""
-        if isinstance(obj, dict):
-            return {k: self._clean_for_json(v) for k, v in obj.items()}
-        elif isinstance(obj, (list, tuple)):
-            return [self._clean_for_json(item) for item in obj]
-        elif hasattr(obj, '__dict__'):
-            return {k: self._clean_for_json(v) for k, v in obj.__dict__.items() if not k.startswith('_')}
-        elif hasattr(obj, '_asdict'):
-            return self._clean_for_json(obj._asdict())
-        elif isinstance(obj, (str, int, float, bool, type(None))):
-            return obj
-        else:
-            return str(obj)
+        # Prevent infinite recursion
+        if current_depth > max_depth:
+            return f"<Max depth {max_depth} exceeded>"
+            
+        try:
+            if isinstance(obj, dict):
+                return {str(k): self._clean_for_json(v, max_depth, current_depth + 1) 
+                       for k, v in obj.items()}
+            elif isinstance(obj, (list, tuple, set)):
+                return [self._clean_for_json(item, max_depth, current_depth + 1) for item in obj]
+            elif hasattr(obj, '__dict__'):
+                # Handle custom objects with __dict__
+                return {
+                    "_class": obj.__class__.__name__,
+                    **{k: self._clean_for_json(v, max_depth, current_depth + 1) 
+                       for k, v in obj.__dict__.items() if not k.startswith('_')}
+                }
+            elif hasattr(obj, '_asdict'):
+                # Handle namedtuples
+                return {
+                    "_class": obj.__class__.__name__,
+                    **self._clean_for_json(obj._asdict(), max_depth, current_depth + 1)
+                }
+            elif isinstance(obj, (str, int, float, bool, type(None))):
+                return obj
+            elif hasattr(obj, 'isoformat'):  # datetime objects
+                return obj.isoformat()
+            else:
+                return str(obj)
+        except Exception as e:
+            return f"<Serialization error: {str(e)}>"
+    
     
     def log_penetration_test(self,
                            ammunition_name: str,
